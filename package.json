@@ -1,0 +1,13 @@
+{
+  "name": "shashki-online-v5",
+  "version": "5.0.0",
+  "private": true,
+  "description": "Шашки Crown Edition с онлайн-комнатами через WebSocket",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#101827">
-<title>Шашки v5.0 Online</title>
+<title>Шашки v5.1 Online PRO</title>
 <style>
 :root{--bg:#0d1422;--panel:#182337;--panel2:#223149;--text:#f8fafc;--muted:#aab6c8;--accent:#4ade80;--accent2:#22c55e;--light:#efd5ad;--dark:#845838;--warn:#fbbf24;--danger:#fb7185}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;min-height:100%;background:radial-gradient(circle at top,#263650 0,#0d1422 52%);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;overscroll-behavior:none}body{min-height:100vh;min-height:100dvh;display:flex;justify-content:center;align-items:center;padding:max(10px,env(safe-area-inset-top)) 12px max(10px,env(safe-area-inset-bottom));user-select:none;overflow-x:hidden}.app{width:min(96vw,610px)}
@@ -446,12 +446,22 @@ html,body{
   content:"";width:7px;height:7px;border-radius:50%;background:#42dd7d;
   box-shadow:0 0 8px #42dd7d;
 }
+.name-input{
+  width:100%;padding:13px 14px;margin:4px 0 10px;
+  border-radius:14px;border:1px solid rgba(216,168,77,.32);
+  background:#0b1118;color:#f8e9c6;font:700 16px system-ui;outline:none;
+}
+.name-input:focus{border-color:#efc45e;box-shadow:0 0 0 3px rgba(239,196,94,.10)}
+.online-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}
+.online-actions .big{margin:0;font-size:13px;padding:12px 8px}
+.players-line{margin:8px 0 2px;color:#f2dfb4;font-size:13px;font-weight:750}
+.invite-note{font-size:11px;color:#8e887c;margin-top:7px;line-height:1.35}
 </style>
 
 </head>
 <body>
 <div class="app"><div class="topbar"><div class="brand"><div class="logo"></div><div><span>Шашки</span><div style="font:600 10px/1.2 system-ui;letter-spacing:.18em;color:#9f9584;margin-top:2px">КЛАССИЧЕСКАЯ ИГРА</div></div></div><button class="iconbtn" id="menuBtn">☰</button></div><div class="card"><div class="statusline"><div id="status" class="status">Ход белых</div><div id="modeBadge" class="modebadge">2 игрока</div></div><div id="board" class="board"></div><div class="controls"><button id="restart" class="btn primary">Новая</button><button id="undo" class="btn secondary">↶ Назад</button><button id="hint" class="btn secondary">💡 Ход</button></div></div><div class="footer">Коснись шашки, затем клетки для хода</div></div>
-<div id="startMenu" class="overlay"><div class="menu"><h1>Шашки</h1><p>Классические русские шашки. Выбери режим игры.</p><button class="big primary" data-mode="bot">🤖 Против компьютера</button><button class="big secondary" data-mode="pvp">👥 На двоих</button><button class="big secondary" id="onlineModeBtn">🌐 Онлайн через интернет</button><button class="big secondary" id="showSettings">⚙️ Настройки</button><button class="big secondary" id="showRules">📖 Правила</button><div class="statgrid"><div class="stat"><b id="winsStat">0</b><span>побед</span></div><div class="stat"><b id="lossStat">0</b><span>поражений</span></div><div class="stat"><b id="gamesStat">0</b><span>партий</span></div></div><div class="tiny">Версия 5.0 Online · бот офлайн + онлайн-комнаты</div></div></div>
+<div id="startMenu" class="overlay"><div class="menu"><h1>Шашки</h1><p>Классические русские шашки. Выбери режим игры.</p><button class="big primary" data-mode="bot">🤖 Против компьютера</button><button class="big secondary" data-mode="pvp">👥 На двоих</button><button class="big secondary" id="onlineModeBtn">🌐 Онлайн через интернет</button><button class="big secondary" id="showSettings">⚙️ Настройки</button><button class="big secondary" id="showRules">📖 Правила</button><div class="statgrid"><div class="stat"><b id="winsStat">0</b><span>побед</span></div><div class="stat"><b id="lossStat">0</b><span>поражений</span></div><div class="stat"><b id="gamesStat">0</b><span>партий</span></div></div><div class="tiny">Версия 5.1 Online PRO · быстрые приглашения + имена игроков</div></div></div>
 <div id="pauseMenu" class="overlay hidden"><div class="menu"><h1>Меню</h1><p>Текущая партия сохраняется автоматически.</p><button class="big primary" id="continueBtn">Продолжить</button><button class="big secondary" id="settingsFromPause">⚙️ Настройки</button><button class="big secondary" id="changeModeBtn">Выбрать режим</button><button class="big danger" id="newFromMenu">Начать заново</button></div></div>
 <div id="settingsMenu" class="overlay hidden"><div class="menu"><h1>Настройки</h1><div class="label">Сложность компьютера</div><div class="row" id="difficultyChoices"><button class="choice" data-diff="easy">Легко</button><button class="choice" data-diff="normal">Норма</button><button class="choice" data-diff="hard">Сложно</button><button class="choice" data-diff="pro">ПРО</button></div><div class="toggle" id="soundToggle"><span>Звук ходов</span><div id="soundSwitch" class="switch"></div></div><button class="big primary" id="closeSettings">Готово</button></div></div>
 <div id="resultMenu" class="overlay hidden"><div class="menu"><div id="resultTitle" class="resultTitle"></div><div id="resultText" class="resultText"></div><button class="big primary" id="playAgain">Играть ещё</button><button class="big secondary" id="resultModes">Выбрать режим</button></div></div>
@@ -461,11 +471,14 @@ html,body{
     <h1>Онлайн</h1>
     <p id="onlineInfo">Создай комнату или подключись по коду.</p>
 
+    <input id="playerNameInput" class="name-input" maxlength="20"
+           autocomplete="nickname" placeholder="Твоё имя" />
+
     <button class="big primary" id="createRoomBtn">＋ Создать комнату</button>
 
     <div class="online-separator"><span>или</span></div>
 
-    <input id="roomCodeInput" class="room-input" maxlength="6"
+    <input id="roomCodeInput" class="room-input" maxlength="5"
            autocomplete="off" autocapitalize="characters"
            placeholder="КОД КОМНАТЫ" />
     <button class="big secondary" id="joinRoomBtn">🔗 Подключиться</button>
@@ -473,8 +486,13 @@ html,body{
     <div id="roomWaiting" class="room-wait hidden">
       <div class="small-muted">Код комнаты</div>
       <div id="roomCodeView" class="room-code">-----</div>
+      <div id="roomPlayers" class="players-line"></div>
       <div id="roomStatus" class="small-muted">Ожидание соперника…</div>
-      <button class="big secondary" id="copyRoomCodeBtn">📋 Скопировать код</button>
+      <div class="online-actions">
+        <button class="big secondary" id="copyRoomCodeBtn">📋 Код</button>
+        <button class="big secondary" id="shareRoomBtn">🔗 Пригласить</button>
+      </div>
+      <div class="invite-note">Ссылка приглашения сама подставит код комнаты на другом устройстве.</div>
     </div>
 
     <button class="big secondary" id="closeOnlineBtn">← Назад</button>
@@ -484,7 +502,7 @@ html,body{
 <script>
 const $=id=>document.getElementById(id);const boardEl=$('board'),statusEl=$('status'),modeBadge=$('modeBadge');const startMenu=$('startMenu'),pauseMenu=$('pauseMenu'),settingsMenu=$('settingsMenu'),resultMenu=$('resultMenu');
 const onlineMenu=$('onlineMenu');
-let socket=null,onlineRoom=null,onlineColor=null,onlineConnected=false,applyingRemoteMove=false;
+let socket=null,onlineRoom=null,onlineColor=null,onlineConnected=false,applyingRemoteMove=false,onlineYouName='Игрок',onlineOpponentName='Соперник';
 
 const storage={
  get(k){try{return localStorage.getItem(k)}catch(e){return null}},
@@ -507,13 +525,25 @@ if(gameMode==='online'&&!applyingRemoteMove&&onlineConnected){
 if(!mustContinueCapture)snapshot();const piece=board[sr][sc];board[move.r][move.c]=piece;board[sr][sc]=null;if(move.capture)board[move.capture.r][move.capture.c]=null;if(!piece.king&&((piece.color==='white'&&move.r===0)||(piece.color==='black'&&move.r===7)))piece.king=true;playTone(move.capture?520:360,move.capture?.09:.05);if(move.capture){const next=getMovesFor(move.r,move.c,true);if(next.length){selected={r:move.r,c:move.c};possibleMoves=next;mustContinueCapture=true;statusEl.textContent=byBot?'Компьютер продолжает взятие…':'Продолжай взятие';saveGame();render();if(byBot)setTimeout(()=>botContinue(move.r,move.c,next),300);return}}mustContinueCapture=false;selected=null;possibleMoves=[];currentPlayer=currentPlayer==='white'?'black':'white';if(byBot)botBusy=false;saveGame();if(checkGameOver()){render();return}updateStatus();render();if(gameMode==='bot'&&currentPlayer==='black')setTimeout(botTurn,380)}
 function count(color,b=board){let n=0;for(const row of b)for(const p of row)if(p&&p.color===color)n++;return n}function playerHasMove(color,b=board){return allLegalMoves(color,b).length>0}
 function checkGameOver(){let winner=null;if(count('white')===0)winner='black';else if(count('black')===0)winner='white';else if(!playerHasMove(currentPlayer))winner=currentPlayer==='white'?'black':'white';if(!winner)return false;gameOver=true;botBusy=false;stats.games++;if(gameMode==='bot'){if(winner==='white')stats.wins++;else stats.losses++}savePrefs();storage.remove('shashki_save');setTimeout(()=>showResult(winner),220);return true}
-function showResult(winner){const humanWin=gameMode==='bot'&&winner==='white',botWin=gameMode==='bot'&&winner==='black';$('resultTitle').textContent=humanWin?'🎉 Ты победил!':botWin?'🤖 Компьютер победил':winner==='white'?'⚪ Белые победили!':'⚫ Чёрные победили!';$('resultText').textContent='Партия завершена. Сыграем ещё?';resultMenu.classList.remove('hidden');updateStats()}
+function showResult(winner){
+  const humanWin=gameMode==='bot'&&winner==='white',botWin=gameMode==='bot'&&winner==='black';
+  if(gameMode==='online'){
+    $('resultTitle').textContent=winner===onlineColor?'🎉 Ты победил!':'Соперник победил';
+    $('resultText').textContent=`${onlineYouName} vs ${onlineOpponentName}. Сыграем ещё?`;
+  }else{
+    $('resultTitle').textContent=humanWin?'🎉 Ты победил!':botWin?'🤖 Компьютер победил':winner==='white'?'⚪ Белые победили!':'⚫ Чёрные победили!';
+    $('resultText').textContent='Партия завершена. Сыграем ещё?';
+  }
+  resultMenu.classList.remove('hidden');updateStats()
+}
 function updateStatus(){
 if(gameOver)return;
 if(gameMode==='bot'&&currentPlayer==='black'){statusEl.innerHTML='Ход компьютера <span class="pulse">•••</span>';return}
 if(gameMode==='online'){
   const mine=currentPlayer===onlineColor;
-  statusEl.textContent=mine?'Твой ход · '+(onlineColor==='white'?'белые':'чёрные'):'Ход соперника · '+(currentPlayer==='white'?'белые':'чёрные');
+  statusEl.textContent=mine
+    ? `${onlineYouName}: твой ход · ${onlineColor==='white'?'белые':'чёрные'}`
+    : `${onlineOpponentName}: ход соперника · ${currentPlayer==='white'?'белые':'чёрные'}`;
   return;
 }
 statusEl.textContent=currentPlayer==='white'?'Ход белых':'Ход чёрных'
@@ -715,14 +745,32 @@ function sendOnline(obj){
   if(socket&&socket.readyState===WebSocket.OPEN)socket.send(JSON.stringify(obj));
 }
 function setOnlineInfo(text){$('onlineInfo').textContent=text}
+function playerName(){
+  const name=($('playerNameInput').value||'').trim().replace(/\s+/g,' ').slice(0,20)||'Игрок';
+  $('playerNameInput').value=name;
+  storage.set('shashki_player_name',name);
+  return name;
+}
+function inviteUrl(code=onlineRoom){
+  const u=new URL(location.href);
+  u.searchParams.set('room',code||'');
+  return u.toString();
+}
+function updatePlayersLine(){
+  const side=onlineColor==='white'?'белые':'чёрные';
+  $('roomPlayers').textContent=onlineOpponentName&&onlineOpponentName!=='Соперник'
+    ? `${onlineYouName} (${side}) · ${onlineOpponentName}`
+    : `${onlineYouName} (${side})`;
+}
 function showRoomWaiting(code,status='Ожидание соперника…'){
   $('roomWaiting').classList.remove('hidden');
   $('roomCodeView').textContent=code||'-----';
   $('roomStatus').textContent=status;
+  updatePlayersLine();
 }
 function resetOnlineUi(){
   $('roomWaiting').classList.add('hidden');
-  $('roomCodeInput').value='';
+  $('roomPlayers').textContent='';
   setOnlineInfo('Создай комнату или подключись по коду.');
 }
 function ensureSocket(){
@@ -742,17 +790,26 @@ function ensureSocket(){
     socket.onmessage=e=>{
       let msg;try{msg=JSON.parse(e.data)}catch(_){return}
       if(msg.type==='created'){
-        onlineRoom=msg.room;onlineColor=msg.color;
+        onlineRoom=msg.room;onlineColor=msg.color;onlineYouName=msg.youName||playerName();onlineOpponentName='Соперник';
         showRoomWaiting(msg.room,'Ожидание второго игрока…');
+        window.history.replaceState(null,'',inviteUrl(msg.room));
         return;
       }
       if(msg.type==='joined'){
-        onlineRoom=msg.room;onlineColor=msg.color;
+        onlineRoom=msg.room;onlineColor=msg.color;onlineYouName=msg.youName||playerName();
         showRoomWaiting(msg.room,'Подключение…');
+        return;
+      }
+      if(msg.type==='room_state'){
+        onlineRoom=msg.room||onlineRoom;onlineColor=msg.color||onlineColor;
+        onlineYouName=msg.youName||onlineYouName;
+        onlineOpponentName=msg.opponentName||'Соперник';
+        if(!onlineConnected)showRoomWaiting(onlineRoom,msg.players===2?'Соперник подключился…':'Ожидание второго игрока…');
         return;
       }
       if(msg.type==='start'){
         onlineRoom=msg.room;onlineColor=msg.color;onlineConnected=true;
+        onlineYouName=msg.youName||onlineYouName;onlineOpponentName=msg.opponentName||'Соперник';
         onlineMenu.classList.add('hidden');
         startMenu.classList.add('hidden');
         pauseMenu.classList.add('hidden');
@@ -760,7 +817,7 @@ function ensureSocket(){
         gameMode='online';
         storage.remove('shashki_save');
         initialBoard();
-        modeBadge.innerHTML='<span class="online-indicator">онлайн · '+(onlineColor==='white'?'белые':'чёрные')+'</span>';
+        modeBadge.innerHTML='<span class="online-indicator">онлайн · '+onlineYouName+' · '+(onlineColor==='white'?'белые':'чёрные')+'</span>';
         updateStatus();render();
         return;
       }
@@ -776,14 +833,21 @@ function ensureSocket(){
       }
       if(msg.type==='restart'&&gameMode==='online'){
         initialBoard();
-        modeBadge.innerHTML='<span class="online-indicator">онлайн · '+(onlineColor==='white'?'белые':'чёрные')+'</span>';
+        modeBadge.innerHTML='<span class="online-indicator">онлайн · '+onlineYouName+' · '+(onlineColor==='white'?'белые':'чёрные')+'</span>';
         updateStatus();render();
         return;
       }
       if(msg.type==='opponent_left'){
         onlineConnected=false;
-        statusEl.textContent='Соперник отключился';
+        statusEl.textContent=(msg.opponentName||onlineOpponentName||'Соперник')+' отключился';
         modeBadge.textContent='онлайн · соперник вышел';
+        onlineOpponentName='Соперник';
+        return;
+      }
+      if(msg.type==='resign'&&gameMode==='online'){
+        gameOver=true;onlineConnected=false;
+        const winner=onlineColor;
+        setTimeout(()=>showResult(winner),120);
         return;
       }
       if(msg.type==='error'){
@@ -798,7 +862,7 @@ async function createOnlineRoom(){
   setOnlineInfo('Подключаемся к серверу…');
   try{
     await ensureSocket();
-    sendOnline({type:'create'});
+    onlineYouName=playerName();sendOnline({type:'create',name:onlineYouName});
     setOnlineInfo('Комната создаётся…');
   }catch(e){
     setOnlineInfo('Не удалось подключиться к серверу. Запусти игру через сервер v5.0.');
@@ -810,7 +874,7 @@ async function joinOnlineRoom(){
   setOnlineInfo('Подключаемся к комнате…');
   try{
     await ensureSocket();
-    sendOnline({type:'join',room:code});
+    onlineYouName=playerName();sendOnline({type:'join',room:code,name:onlineYouName});
   }catch(e){
     setOnlineInfo('Не удалось подключиться к серверу.');
   }
@@ -818,7 +882,8 @@ async function joinOnlineRoom(){
 function leaveOnline(){
   if(onlineRoom)sendOnline({type:'leave',room:onlineRoom});
   if(socket){try{socket.close()}catch(e){}}
-  socket=null;onlineRoom=null;onlineColor=null;onlineConnected=false;
+  socket=null;onlineRoom=null;onlineColor=null;onlineConnected=false;onlineOpponentName='Соперник';
+  try{const u=new URL(location.href);u.searchParams.delete('room');window.history.replaceState(null,'',u)}catch(e){}
   if(gameMode==='online')gameMode='pvp';
 }
 
@@ -836,10 +901,26 @@ $('onlineModeBtn').onclick=()=>{resetOnlineUi();startMenu.classList.add('hidden'
 $('closeOnlineBtn').onclick=()=>{leaveOnline();onlineMenu.classList.add('hidden');startMenu.classList.remove('hidden')};
 $('createRoomBtn').onclick=createOnlineRoom;
 $('joinRoomBtn').onclick=joinOnlineRoom;
-$('roomCodeInput').oninput=e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6);
+$('roomCodeInput').oninput=e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5);
 $('roomCodeInput').onkeydown=e=>{if(e.key==='Enter')joinOnlineRoom()};
 $('copyRoomCodeBtn').onclick=async()=>{try{await navigator.clipboard.writeText(onlineRoom||'');$('roomStatus').textContent='Код скопирован'}catch(e){$('roomStatus').textContent='Код: '+(onlineRoom||'')}};
+$('shareRoomBtn').onclick=async()=>{
+  const url=inviteUrl();
+  const text=`Приглашаю сыграть в шашки. Комната ${onlineRoom}`;
+  try{
+    if(navigator.share){await navigator.share({title:'Шашки Online',text,url});$('roomStatus').textContent='Приглашение готово'}
+    else{await navigator.clipboard.writeText(url);$('roomStatus').textContent='Ссылка приглашения скопирована'}
+  }catch(e){if(e&&e.name!=='AbortError')$('roomStatus').textContent='Ссылка: '+url}
+};
 document.querySelectorAll('[data-diff]').forEach(b=>b.onclick=()=>{settings.difficulty=b.dataset.diff;refreshSettings()});$('soundToggle').onclick=()=>{settings.sound=!settings.sound;refreshSettings();playTone(440,.05)};$('showRules').onclick=rules;$('showSettings').onclick=openSettings;$('settingsFromPause').onclick=openSettings;$('closeSettings').onclick=closeSettings;$('restart').onclick=()=>{if(gameMode==='online'){sendOnline({type:'restart',room:onlineRoom});initialBoard()}else initialBoard()};$('undo').onclick=undo;$('hint').onclick=hint;$('menuBtn').onclick=()=>pauseMenu.classList.remove('hidden');$('continueBtn').onclick=()=>pauseMenu.classList.add('hidden');$('changeModeBtn').onclick=()=>{if(gameMode==='online')leaveOnline();pauseMenu.classList.add('hidden');startMenu.classList.remove('hidden')};$('newFromMenu').onclick=()=>{pauseMenu.classList.add('hidden');initialBoard()};$('playAgain').onclick=()=>{resultMenu.classList.add('hidden');initialBoard()};$('resultModes').onclick=()=>{resultMenu.classList.add('hidden');startMenu.classList.remove('hidden')};
-loadPrefs();refreshSettings();updateStats();if(!loadGame())initialBoard();
+loadPrefs();refreshSettings();updateStats();
+$('playerNameInput').value=storage.get('shashki_player_name')||'';
+const invitedRoom=(()=>{try{return new URL(location.href).searchParams.get('room')||''}catch(e){return ''}})().toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5);
+if(invitedRoom){
+  startMenu.classList.add('hidden');onlineMenu.classList.remove('hidden');
+  $('roomCodeInput').value=invitedRoom;
+  setOnlineInfo('Тебя пригласили в комнату '+invitedRoom+'. Введи имя и нажми «Подключиться».');
+}
+if(!loadGame())initialBoard();
 </script>
 </body></html>

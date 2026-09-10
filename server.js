@@ -15,25 +15,44 @@ function roomCode() {
   } while (rooms.has(code));
   return code;
 }
+function cleanName(value) {
+  return String(value || 'Игрок').trim().replace(/\s+/g, ' ').slice(0, 20) || 'Игрок';
+}
 function send(ws, data) {
   if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(data));
 }
-function other(room, ws) {
-  return room.players.find(p => p.ws !== ws)?.ws || null;
+function otherPlayer(room, ws) {
+  return room.players.find(p => p.ws !== ws) || null;
+}
+function broadcastRoomState(room) {
+  for (const p of room.players) {
+    const opp = room.players.find(x => x.ws !== p.ws);
+    send(p.ws, {
+      type: 'room_state',
+      room: room.code,
+      color: p.color,
+      youName: p.name,
+      opponentName: opp?.name || null,
+      players: room.players.length
+    });
+  }
 }
 function cleanup(ws) {
   const code = ws.room;
   if (!code) return;
   const room = rooms.get(code);
+  ws.room = null;
   if (!room) return;
   room.players = room.players.filter(p => p.ws !== ws);
-  const peer = room.players[0]?.ws;
-  if (peer) {
-    peer.room = code;
-    send(peer, {type:'opponent_left'});
+  if (room.players.length === 0) {
+    rooms.delete(code);
+    return;
   }
-  if (room.players.length === 0) rooms.delete(code);
+  const peer = room.players[0];
+  send(peer.ws, {type:'opponent_left', opponentName: ws.playerName || 'Соперник'});
+  broadcastRoomState(room);
 }
+
 const server = http.createServer((req, res) => {
   let pathname = decodeURIComponent(req.url.split('?')[0]);
   if (pathname === '/') pathname = '/index.html';
@@ -47,6 +66,7 @@ const server = http.createServer((req, res) => {
     res.end(data);
   });
 });
+
 const wss = new WebSocket.Server({ server });
 
 wss.on('connection', ws => {
@@ -56,36 +76,45 @@ wss.on('connection', ws => {
     if (msg.type === 'create') {
       cleanup(ws);
       const code = roomCode();
-      rooms.set(code, {players:[{ws,color:'white'}]});
+      const name = cleanName(msg.name);
+      ws.playerName = name;
       ws.room = code;
-      send(ws, {type:'created',room:code,color:'white'});
+      const room = {code, players:[{ws,color:'white',name}]};
+      rooms.set(code, room);
+      send(ws, {type:'created',room:code,color:'white',youName:name});
+      broadcastRoomState(room);
       return;
     }
 
     if (msg.type === 'join') {
       cleanup(ws);
-      const code = String(msg.room || '').toUpperCase();
+      const code = String(msg.room || '').toUpperCase().replace(/[^A-Z0-9]/g,'');
       const room = rooms.get(code);
       if (!room) return send(ws,{type:'error',message:'Комната не найдена'});
       if (room.players.length >= 2) return send(ws,{type:'error',message:'Комната уже заполнена'});
-      room.players.push({ws,color:'black'});
+      const name = cleanName(msg.name);
+      ws.playerName = name;
       ws.room = code;
-      send(ws,{type:'joined',room:code,color:'black'});
-      for (const p of room.players) send(p.ws,{type:'start',room:code,color:p.color});
+      room.players.push({ws,color:'black',name});
+      send(ws,{type:'joined',room:code,color:'black',youName:name});
+      broadcastRoomState(room);
+      for (const p of room.players) {
+        const opp = room.players.find(x => x.ws !== p.ws);
+        send(p.ws,{type:'start',room:code,color:p.color,youName:p.name,opponentName:opp?.name || 'Соперник'});
+      }
       return;
     }
 
-    if (msg.type === 'move' || msg.type === 'restart') {
-      const code = ws.room;
-      const room = rooms.get(code);
+    if (['move','restart','resign'].includes(msg.type)) {
+      const room = rooms.get(ws.room);
       if (!room || room.players.length !== 2) return;
-      send(other(room,ws), msg);
+      const opponent = otherPlayer(room, ws);
+      send(opponent?.ws, {...msg, fromName: ws.playerName || 'Соперник'});
       return;
     }
 
     if (msg.type === 'leave') {
       cleanup(ws);
-      ws.room = null;
       return;
     }
   });
@@ -95,5 +124,5 @@ wss.on('connection', ws => {
 });
 
 server.listen(PORT, () => {
-  console.log(`Шашки v5.0 Online: http://localhost:${PORT}`);
+  console.log(`Шашки v5.1 Online PRO: http://localhost:${PORT}`);
 });

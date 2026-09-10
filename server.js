@@ -79,7 +79,7 @@ wss.on('connection', ws => {
       const name = cleanName(msg.name);
       ws.playerName = name;
       ws.room = code;
-      const room = {code, players:[{ws,color:'white',name}]};
+      const room = {code, players:[{ws,color:'white',name}], rematchRequester:null};
       rooms.set(code, room);
       send(ws, {type:'created',room:code,color:'white',youName:name});
       broadcastRoomState(room);
@@ -105,6 +105,39 @@ wss.on('connection', ws => {
       return;
     }
 
+    if (msg.type === 'rematch_request') {
+      const room = rooms.get(ws.room);
+      if (!room || room.players.length !== 2) return;
+      room.rematchRequester = ws;
+      const opponent = otherPlayer(room, ws);
+      send(ws, {type:'rematch_waiting'});
+      send(opponent?.ws, {type:'rematch_offer', fromName: ws.playerName || 'Соперник'});
+      return;
+    }
+
+    if (msg.type === 'rematch_accept') {
+      const room = rooms.get(ws.room);
+      if (!room || room.players.length !== 2) return;
+      const requester = room.rematchRequester;
+      if (!requester || requester === ws) return;
+      room.rematchRequester = null;
+      for (const p of room.players) p.color = p.color === 'white' ? 'black' : 'white';
+      for (const p of room.players) {
+        const opp = room.players.find(x => x.ws !== p.ws);
+        send(p.ws, {type:'rematch_start', room:room.code, color:p.color, youName:p.name, opponentName:opp?.name || 'Соперник'});
+      }
+      return;
+    }
+
+    if (msg.type === 'rematch_decline' || msg.type === 'rematch_cancel') {
+      const room = rooms.get(ws.room);
+      if (!room || room.players.length !== 2) return;
+      const opponent = otherPlayer(room, ws);
+      room.rematchRequester = null;
+      send(opponent?.ws, {type: msg.type === 'rematch_decline' ? 'rematch_declined' : 'rematch_cancelled', fromName: ws.playerName || 'Соперник'});
+      return;
+    }
+
     if (['move','restart','resign'].includes(msg.type)) {
       const room = rooms.get(ws.room);
       if (!room || room.players.length !== 2) return;
@@ -124,5 +157,5 @@ wss.on('connection', ws => {
 });
 
 server.listen(PORT, () => {
-  console.log(`Шашки v5.1 Online PRO: http://localhost:${PORT}`);
+  console.log(`Шашки v5.1.1 Online PRO: http://localhost:${PORT}`);
 });

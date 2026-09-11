@@ -2,7 +2,7 @@
   "name": "shashki-online-v5-1",
   "version": "5.1.3",
   "private": true,
-  "description": "Шашки Crown Edition v5.1.3 Online PRO: реванш по согласию, имена игроков и приглашения по ссылке",
+  "description": "Шашки Crown Edition v5.1.3 Online PRO: устойчивое WebSocket-соединение, автопереподключение и реванш",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

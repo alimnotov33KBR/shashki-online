@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#101827">
-<title>Шашки v5.1.2 Online PRO</title>
+<title>Шашки v5.1.3 Online PRO</title>
 <style>
 :root{--bg:#0d1422;--panel:#182337;--panel2:#223149;--text:#f8fafc;--muted:#aab6c8;--accent:#4ade80;--accent2:#22c55e;--light:#efd5ad;--dark:#845838;--warn:#fbbf24;--danger:#fb7185}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;min-height:100%;background:radial-gradient(circle at top,#263650 0,#0d1422 52%);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;overscroll-behavior:none}body{min-height:100vh;min-height:100dvh;display:flex;justify-content:center;align-items:center;padding:max(10px,env(safe-area-inset-top)) 12px max(10px,env(safe-area-inset-bottom));user-select:none;overflow-x:hidden}.app{width:min(96vw,610px)}
@@ -461,7 +461,7 @@ html,body{
 </head>
 <body>
 <div class="app"><div class="topbar"><div class="brand"><div class="logo"></div><div><span>Шашки</span><div style="font:600 10px/1.2 system-ui;letter-spacing:.18em;color:#9f9584;margin-top:2px">КЛАССИЧЕСКАЯ ИГРА</div></div></div><button class="iconbtn" id="menuBtn">☰</button></div><div class="card"><div class="statusline"><div id="status" class="status">Ход белых</div><div id="modeBadge" class="modebadge">2 игрока</div></div><div id="board" class="board"></div><div class="controls"><button id="restart" class="btn primary">Новая</button><button id="undo" class="btn secondary">↶ Назад</button><button id="hint" class="btn secondary">💡 Ход</button></div></div><div class="footer">Коснись шашки, затем клетки для хода</div></div>
-<div id="startMenu" class="overlay"><div class="menu"><h1>Шашки</h1><p>Классические русские шашки. Выбери режим игры.</p><button class="big primary" data-mode="bot">🤖 Против компьютера</button><button class="big secondary" data-mode="pvp">👥 На двоих</button><button class="big secondary" id="onlineModeBtn">🌐 Онлайн через интернет</button><button class="big secondary" id="showSettings">⚙️ Настройки</button><button class="big secondary" id="showRules">📖 Правила</button><div class="statgrid"><div class="stat"><b id="winsStat">0</b><span>побед</span></div><div class="stat"><b id="lossStat">0</b><span>поражений</span></div><div class="stat"><b id="gamesStat">0</b><span>партий</span></div></div><div class="tiny">Версия 5.1.3 Online PRO · реванш по согласию + имена игроков</div></div></div>
+<div id="startMenu" class="overlay"><div class="menu"><h1>Шашки</h1><p>Классические русские шашки. Выбери режим игры.</p><button class="big primary" data-mode="bot">🤖 Против компьютера</button><button class="big secondary" data-mode="pvp">👥 На двоих</button><button class="big secondary" id="onlineModeBtn">🌐 Онлайн через интернет</button><button class="big secondary" id="showSettings">⚙️ Настройки</button><button class="big secondary" id="showRules">📖 Правила</button><div class="statgrid"><div class="stat"><b id="winsStat">0</b><span>побед</span></div><div class="stat"><b id="lossStat">0</b><span>поражений</span></div><div class="stat"><b id="gamesStat">0</b><span>партий</span></div></div><div class="tiny">Версия 5.1.3 Online PRO · стабильное онлайн-соединение + реванш</div></div></div>
 <div id="pauseMenu" class="overlay hidden"><div class="menu"><h1>Меню</h1><p>Текущая партия сохраняется автоматически.</p><button class="big primary" id="continueBtn">Продолжить</button><button class="big secondary" id="settingsFromPause">⚙️ Настройки</button><button class="big secondary" id="changeModeBtn">Выбрать режим</button><button class="big danger" id="newFromMenu">Начать заново</button></div></div>
 <div id="settingsMenu" class="overlay hidden"><div class="menu"><h1>Настройки</h1><div class="label">Сложность компьютера</div><div class="row" id="difficultyChoices"><button class="choice" data-diff="easy">Легко</button><button class="choice" data-diff="normal">Норма</button><button class="choice" data-diff="hard">Сложно</button><button class="choice" data-diff="pro">ПРО</button></div><div class="toggle" id="soundToggle"><span>Звук ходов</span><div id="soundSwitch" class="switch"></div></div><button class="big primary" id="closeSettings">Готово</button></div></div>
 <div id="resultMenu" class="overlay hidden"><div class="menu"><div id="resultTitle" class="resultTitle"></div><div id="resultText" class="resultText"></div><button class="big primary" id="playAgain">Играть ещё</button><button class="big secondary" id="resultModes">Выбрать режим</button></div></div>
@@ -502,7 +502,7 @@ html,body{
 <script>
 const $=id=>document.getElementById(id);const boardEl=$('board'),statusEl=$('status'),modeBadge=$('modeBadge');const startMenu=$('startMenu'),pauseMenu=$('pauseMenu'),settingsMenu=$('settingsMenu'),resultMenu=$('resultMenu');
 const onlineMenu=$('onlineMenu');
-let socket=null,onlineRoom=null,onlineColor=null,onlineConnected=false,applyingRemoteMove=false,onlineYouName='Игрок',onlineOpponentName='Соперник',rematchState='idle',onlinePly=0,onlineHeartbeatTimer=null;
+let socket=null,onlineRoom=null,onlineColor=null,onlineConnected=false,applyingRemoteMove=false,onlineYouName='Игрок',onlineOpponentName='Соперник',rematchState='idle',onlinePly=0,onlineToken=null,onlineHeartbeatTimer=null,onlineReconnectTimer=null,onlineClosingManually=false;
 
 const storage={
  get(k){try{return localStorage.getItem(k)}catch(e){return null}},
@@ -793,6 +793,18 @@ function startOnlineHeartbeat(wsRef){
     try{wsRef.send(JSON.stringify({type:'ping',ts:Date.now()}))}catch(e){}
   },15000);
 }
+function scheduleOnlineReconnect(){
+  if(onlineClosingManually||!onlineRoom||!onlineToken||onlineReconnectTimer)return;
+  onlineReconnectTimer=setTimeout(async()=>{
+    onlineReconnectTimer=null;
+    if(onlineClosingManually||onlineConnected&&socket&&socket.readyState===WebSocket.OPEN)return;
+    try{
+      await openOnlineSocket(true);
+    }catch(e){
+      scheduleOnlineReconnect();
+    }
+  },900);
+}
 function setOnlineInfo(text){$('onlineInfo').textContent=text}
 function playerName(){
   const name=($('playerNameInput').value||'').trim().replace(/\s+/g,' ').slice(0,20)||'Игрок';
@@ -822,164 +834,141 @@ function resetOnlineUi(){
   $('roomPlayers').textContent='';
   setOnlineInfo('Создай комнату или подключись по коду.');
 }
-function ensureSocket(){
+function handleOnlineMessage(msg){
+  if(msg.type==='pong')return;
+  if(msg.type==='resume_failed'){onlineConnected=false;onlineRoom=null;onlineToken=null;setOnlineInfo('Сессию восстановить не удалось. Подключись к комнате заново.');if(gameMode==='online'){statusEl.textContent='Сессия завершена';modeBadge.textContent='онлайн · отключено'}return;}
+  if(msg.type==='created'){
+    onlineRoom=msg.room;onlineColor=msg.color;onlineToken=msg.token||onlineToken;onlineYouName=msg.youName||playerName();onlineOpponentName='Соперник';
+    showRoomWaiting(msg.room,'Ожидание второго игрока…');
+    window.history.replaceState(null,'',inviteUrl(msg.room));
+    return;
+  }
+  if(msg.type==='joined'){
+    onlineRoom=msg.room;onlineColor=msg.color;onlineToken=msg.token||onlineToken;onlineYouName=msg.youName||playerName();
+    showRoomWaiting(msg.room,'Подключение…');
+    return;
+  }
+  if(msg.type==='resumed'){
+    onlineRoom=msg.room||onlineRoom;onlineColor=msg.color||onlineColor;onlineToken=msg.token||onlineToken;
+    onlineYouName=msg.youName||onlineYouName;onlineOpponentName=msg.opponentName||onlineOpponentName;
+    onlineConnected=!!msg.started;
+    if(msg.started){
+      if(gameMode!=='online'){
+        onlineMenu.classList.add('hidden');startMenu.classList.add('hidden');pauseMenu.classList.add('hidden');resultMenu.classList.add('hidden');
+        gameMode='online';storage.remove('shashki_save');initialBoard();
+      }
+      if(msg.state)applyOnlineState(msg.state,msg.ply||onlinePly);
+      onlinePly=Math.max(onlinePly,Number(msg.ply)||0);
+      modeBadge.innerHTML='<span class="online-indicator">онлайн · '+onlineYouName+' · '+(onlineColor==='white'?'белые':'чёрные')+'</span>';
+      updateStatus();render();
+    }else{
+      showRoomWaiting(onlineRoom,'Соединение восстановлено. Ожидание второго игрока…');
+    }
+    return;
+  }
+  if(msg.type==='room_state'){
+    onlineRoom=msg.room||onlineRoom;onlineColor=msg.color||onlineColor;
+    onlineYouName=msg.youName||onlineYouName;
+    onlineOpponentName=msg.opponentName||'Соперник';
+    if(!onlineConnected)showRoomWaiting(onlineRoom,msg.players===2?'Соперник подключился…':'Ожидание второго игрока…');
+    return;
+  }
+  if(msg.type==='start'){
+    onlineRoom=msg.room;onlineColor=msg.color;onlineToken=msg.token||onlineToken;onlineConnected=true;
+    onlineYouName=msg.youName||onlineYouName;onlineOpponentName=msg.opponentName||'Соперник';
+    onlineMenu.classList.add('hidden');startMenu.classList.add('hidden');pauseMenu.classList.add('hidden');resultMenu.classList.add('hidden');
+    gameMode='online';storage.remove('shashki_save');initialBoard();onlinePly=0;
+    modeBadge.innerHTML='<span class="online-indicator">онлайн · '+onlineYouName+' · '+(onlineColor==='white'?'белые':'чёрные')+'</span>';
+    updateStatus();render();return;
+  }
+  if(msg.type==='opponent_reconnecting'){
+    if(gameMode==='online'&&!gameOver){modeBadge.textContent='онлайн · соперник переподключается…'}
+    else if(onlineRoom)showRoomWaiting(onlineRoom,'Соперник переподключается…');
+    return;
+  }
+  if(msg.type==='opponent_reconnected'){
+    onlineOpponentName=msg.opponentName||onlineOpponentName;
+    onlineConnected=true;
+    if(gameMode==='online'){
+      modeBadge.innerHTML='<span class="online-indicator">онлайн · '+onlineYouName+' · '+(onlineColor==='white'?'белые':'чёрные')+'</span>';updateStatus();
+    }
+    return;
+  }
+  if(msg.type==='move'&&gameMode==='online'){
+    if(!Number.isInteger(msg.ply)||msg.ply<=onlinePly)return;
+    applyingRemoteMove=true;
+    try{if(!applyOnlineState(msg.state,msg.ply))statusEl.textContent='Получено повреждённое состояние партии'}finally{applyingRemoteMove=false}
+    return;
+  }
+  if(msg.type==='sync_request'&&gameMode==='online'){statusEl.textContent='Синхронизация с сервером…';return}
+  if(msg.type==='rematch_offer'&&gameMode==='online'){
+    gameOver=true;$('resultTitle').textContent='🔄 '+(msg.fromName||onlineOpponentName)+' предлагает реванш';$('resultText').textContent='Принять новую партию? Цвета игроков поменяются.';setRematchButtons('offered');resultMenu.classList.remove('hidden');return;
+  }
+  if(msg.type==='rematch_waiting'&&gameMode==='online'){setRematchButtons('waiting');$('resultText').textContent='Предложение отправлено. Ждём ответ '+onlineOpponentName+'…';return}
+  if(msg.type==='rematch_declined'&&gameMode==='online'){setRematchButtons('idle');$('resultText').textContent=(msg.fromName||onlineOpponentName)+' отказался от реванша.';return}
+  if(msg.type==='rematch_cancelled'&&gameMode==='online'){setRematchButtons('idle');$('resultText').textContent=(msg.fromName||onlineOpponentName)+' отменил предложение реванша.';return}
+  if(msg.type==='rematch_start'&&gameMode==='online'){startOnlineRematch(msg);return}
+  if(msg.type==='restart'&&gameMode==='online'){onlinePly=0;initialBoard();modeBadge.innerHTML='<span class="online-indicator">онлайн · '+onlineYouName+' · '+(onlineColor==='white'?'белые':'чёрные')+'</span>';updateStatus();render();return}
+  if(msg.type==='opponent_left'){
+    onlineConnected=false;statusEl.textContent=(msg.opponentName||onlineOpponentName||'Соперник')+' отключился';modeBadge.textContent='онлайн · соперник вышел';onlineOpponentName='Соперник';return;
+  }
+  if(msg.type==='resign'&&gameMode==='online'){gameOver=true;const winner=onlineColor;setTimeout(()=>showResult(winner),120);return}
+  if(msg.type==='error'){setOnlineInfo(msg.message||'Ошибка подключения');$('roomStatus').textContent=msg.message||'Ошибка';return}
+}
+function openOnlineSocket(isResume=false){
   return new Promise((resolve,reject)=>{
-    if(socket&&socket.readyState===WebSocket.OPEN){resolve();return}
-    const wsRef=new WebSocket(onlineServerUrl());
+    let wsRef;
+    try{wsRef=new WebSocket(onlineServerUrl())}catch(e){reject(e);return}
     socket=wsRef;
     let settled=false;
-    const timer=setTimeout(()=>{if(!settled){settled=true;reject(new Error('timeout'))}},6000);
+    const timer=setTimeout(()=>{if(!settled){settled=true;try{wsRef.close()}catch(e){};reject(new Error('timeout'))}},7000);
     wsRef.onopen=()=>{
       if(socket!==wsRef)return;
-      clearTimeout(timer);settled=true;startOnlineHeartbeat(wsRef);resolve();
+      clearTimeout(timer);settled=true;startOnlineHeartbeat(wsRef);
+      if(isResume&&onlineRoom&&onlineToken){wsRef.send(JSON.stringify({type:'resume',room:onlineRoom,token:onlineToken}))}
+      resolve();
     };
-    wsRef.onerror=()=>{
-      if(socket!==wsRef)return;
-      clearTimeout(timer);stopOnlineHeartbeat();
-      if(!settled){settled=true;reject(new Error('connection'))}
-    };
+    wsRef.onerror=()=>{if(socket!==wsRef)return;if(!settled){clearTimeout(timer);settled=true;reject(new Error('connection'))}};
     wsRef.onclose=()=>{
       if(socket!==wsRef)return;
-      clearTimeout(timer);stopOnlineHeartbeat();
-      onlineConnected=false;
-      if(gameMode==='online'&&!gameOver){
-        statusEl.textContent='Связь с сервером потеряна';
-        modeBadge.textContent='онлайн · нет связи';
-      }
+      clearTimeout(timer);stopOnlineHeartbeat();socket=null;onlineConnected=false;
+      if(!onlineClosingManually&&onlineRoom&&onlineToken){
+        if(gameMode==='online'&&!gameOver){statusEl.textContent='Восстанавливаем соединение…';modeBadge.textContent='онлайн · переподключение…'}
+        else if(onlineRoom)showRoomWaiting(onlineRoom,'Восстанавливаем соединение…');
+        scheduleOnlineReconnect();
+      }else if(gameMode==='online'&&!gameOver){statusEl.textContent='Связь с сервером потеряна';modeBadge.textContent='онлайн · нет связи'}
     };
-    wsRef.onmessage=e=>{
-      let msg;try{msg=JSON.parse(e.data)}catch(_){return}
-      if(msg.type==='pong')return;
-      if(msg.type==='created'){
-        onlineRoom=msg.room;onlineColor=msg.color;onlineYouName=msg.youName||playerName();onlineOpponentName='Соперник';
-        showRoomWaiting(msg.room,'Ожидание второго игрока…');
-        window.history.replaceState(null,'',inviteUrl(msg.room));
-        return;
-      }
-      if(msg.type==='joined'){
-        onlineRoom=msg.room;onlineColor=msg.color;onlineYouName=msg.youName||playerName();
-        showRoomWaiting(msg.room,'Подключение…');
-        return;
-      }
-      if(msg.type==='room_state'){
-        onlineRoom=msg.room||onlineRoom;onlineColor=msg.color||onlineColor;
-        onlineYouName=msg.youName||onlineYouName;
-        onlineOpponentName=msg.opponentName||'Соперник';
-        if(!onlineConnected)showRoomWaiting(onlineRoom,msg.players===2?'Соперник подключился…':'Ожидание второго игрока…');
-        return;
-      }
-      if(msg.type==='start'){
-        onlineRoom=msg.room;onlineColor=msg.color;onlineConnected=true;
-        onlineYouName=msg.youName||onlineYouName;onlineOpponentName=msg.opponentName||'Соперник';
-        onlineMenu.classList.add('hidden');
-        startMenu.classList.add('hidden');
-        pauseMenu.classList.add('hidden');
-        resultMenu.classList.add('hidden');
-        gameMode='online';
-        storage.remove('shashki_save');
-        initialBoard();
-        onlinePly=0;
-        modeBadge.innerHTML='<span class="online-indicator">онлайн · '+onlineYouName+' · '+(onlineColor==='white'?'белые':'чёрные')+'</span>';
-        updateStatus();render();
-        return;
-      }
-      if(msg.type==='move'&&gameMode==='online'){
-        if(!Number.isInteger(msg.ply)||msg.ply<=onlinePly)return;
-        applyingRemoteMove=true;
-        try{
-          if(!applyOnlineState(msg.state,msg.ply)){
-            statusEl.textContent='Получено повреждённое состояние партии';
-          }
-        }finally{applyingRemoteMove=false}
-        return;
-      }
-      if(msg.type==='sync_request'&&gameMode==='online'){
-        statusEl.textContent='Синхронизация с сервером…';
-        return;
-      }
-      if(msg.type==='rematch_offer'&&gameMode==='online'){
-        gameOver=true;
-        $('resultTitle').textContent='🔄 '+(msg.fromName||onlineOpponentName)+' предлагает реванш';
-        $('resultText').textContent='Принять новую партию? Цвета игроков поменяются.';
-        setRematchButtons('offered');
-        resultMenu.classList.remove('hidden');
-        return;
-      }
-      if(msg.type==='rematch_waiting'&&gameMode==='online'){
-        setRematchButtons('waiting');
-        $('resultText').textContent='Предложение отправлено. Ждём ответ '+onlineOpponentName+'…';
-        return;
-      }
-      if(msg.type==='rematch_declined'&&gameMode==='online'){
-        setRematchButtons('idle');
-        $('resultText').textContent=(msg.fromName||onlineOpponentName)+' отказался от реванша.';
-        return;
-      }
-      if(msg.type==='rematch_cancelled'&&gameMode==='online'){
-        setRematchButtons('idle');
-        $('resultText').textContent=(msg.fromName||onlineOpponentName)+' отменил предложение реванша.';
-        return;
-      }
-      if(msg.type==='rematch_start'&&gameMode==='online'){
-        startOnlineRematch(msg);
-        return;
-      }
-      if(msg.type==='restart'&&gameMode==='online'){
-        onlinePly=0;
-        initialBoard();
-        modeBadge.innerHTML='<span class="online-indicator">онлайн · '+onlineYouName+' · '+(onlineColor==='white'?'белые':'чёрные')+'</span>';
-        updateStatus();render();
-        return;
-      }
-      if(msg.type==='opponent_left'){
-        onlineConnected=false;
-        statusEl.textContent=(msg.opponentName||onlineOpponentName||'Соперник')+' отключился';
-        modeBadge.textContent='онлайн · соперник вышел';
-        onlineOpponentName='Соперник';
-        return;
-      }
-      if(msg.type==='resign'&&gameMode==='online'){
-        gameOver=true;
-        const winner=onlineColor;
-        setTimeout(()=>showResult(winner),120);
-        return;
-      }
-      if(msg.type==='error'){
-        setOnlineInfo(msg.message||'Ошибка подключения');
-        $('roomStatus').textContent=msg.message||'Ошибка';
-        return;
-      }
-    };
+    wsRef.onmessage=e=>{if(socket!==wsRef)return;let msg;try{msg=JSON.parse(e.data)}catch(_){return}handleOnlineMessage(msg)};
   });
 }
+function ensureSocket(){
+  if(socket&&socket.readyState===WebSocket.OPEN)return Promise.resolve();
+  return openOnlineSocket(false);
+}
 async function createOnlineRoom(){
+  onlineClosingManually=false;onlineToken=null;onlineRoom=null;
   setOnlineInfo('Подключаемся к серверу…');
-  try{
-    await ensureSocket();
-    onlineYouName=playerName();sendOnline({type:'create',name:onlineYouName});
-    setOnlineInfo('Комната создаётся…');
-  }catch(e){
-    setOnlineInfo('Не удалось подключиться к серверу. Запусти игру через сервер v5.0.');
-  }
+  try{await ensureSocket();onlineYouName=playerName();sendOnline({type:'create',name:onlineYouName});setOnlineInfo('Комната создаётся…')}
+  catch(e){setOnlineInfo('Не удалось подключиться к серверу.')}
 }
 async function joinOnlineRoom(){
   const code=$('roomCodeInput').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
   if(code.length<4){setOnlineInfo('Введи код комнаты.');return}
+  onlineClosingManually=false;onlineToken=null;onlineRoom=null;
   setOnlineInfo('Подключаемся к комнате…');
-  try{
-    await ensureSocket();
-    onlineYouName=playerName();sendOnline({type:'join',room:code,name:onlineYouName});
-  }catch(e){
-    setOnlineInfo('Не удалось подключиться к серверу.');
-  }
+  try{await ensureSocket();onlineYouName=playerName();sendOnline({type:'join',room:code,name:onlineYouName})}
+  catch(e){setOnlineInfo('Не удалось подключиться к серверу.')}
 }
 function leaveOnline(){
+  onlineClosingManually=true;
+  if(onlineReconnectTimer){clearTimeout(onlineReconnectTimer);onlineReconnectTimer=null}
   if(onlineRoom)sendOnline({type:'leave',room:onlineRoom});
   stopOnlineHeartbeat();
   if(socket){try{socket.close()}catch(e){}}
-  socket=null;onlineRoom=null;onlineColor=null;onlineConnected=false;onlineOpponentName='Соперник';
+  socket=null;onlineRoom=null;onlineToken=null;onlineColor=null;onlineConnected=false;onlineOpponentName='Соперник';
   try{const u=new URL(location.href);u.searchParams.delete('room');window.history.replaceState(null,'',u)}catch(e){}
   if(gameMode==='online')gameMode='pvp';
+  setTimeout(()=>{onlineClosingManually=false},0);
 }
 
 function startMode(mode){gameMode=mode;modeBadge.textContent=mode==='bot'?`бот · ${diffName()}`:mode==='online'?'онлайн':'2 игрока';startMenu.classList.add('hidden');pauseMenu.classList.add('hidden');resultMenu.classList.add('hidden');initialBoard()}

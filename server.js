@@ -79,7 +79,7 @@ wss.on('connection', ws => {
       const name = cleanName(msg.name);
       ws.playerName = name;
       ws.room = code;
-      const room = {code, players:[{ws,color:'white',name}], rematchRequester:null};
+      const room = {code, players:[{ws,color:'white',name}], rematchRequester:null, ply:0, turnColor:'white'};
       rooms.set(code, room);
       send(ws, {type:'created',room:code,color:'white',youName:name});
       broadcastRoomState(room);
@@ -121,6 +121,8 @@ wss.on('connection', ws => {
       const requester = room.rematchRequester;
       if (!requester || requester === ws) return;
       room.rematchRequester = null;
+      room.ply = 0;
+      room.turnColor = 'white';
       for (const p of room.players) p.color = p.color === 'white' ? 'black' : 'white';
       for (const p of room.players) {
         const opp = room.players.find(x => x.ws !== p.ws);
@@ -138,7 +140,36 @@ wss.on('connection', ws => {
       return;
     }
 
-    if (['move','restart','resign'].includes(msg.type)) {
+    if (msg.type === 'move') {
+      const room = rooms.get(ws.room);
+      if (!room || room.players.length !== 2) return;
+      const player = room.players.find(p => p.ws === ws);
+      const opponent = otherPlayer(room, ws);
+      if (!player || player.color !== room.turnColor) return;
+      const nextPly = Number(msg.ply);
+      if (!Number.isInteger(nextPly) || nextPly !== room.ply + 1) {
+        return send(ws, {type:'sync_request', expectedPly:room.ply + 1});
+      }
+      if (!msg.state || !Array.isArray(msg.state.board) || msg.state.board.length !== 8) return;
+      room.ply = nextPly;
+      if (msg.state.currentPlayer === 'white' || msg.state.currentPlayer === 'black') {
+        room.turnColor = msg.state.currentPlayer;
+      }
+      send(opponent?.ws, {...msg, fromName: ws.playerName || 'Соперник'});
+      return;
+    }
+
+    if (msg.type === 'restart') {
+      const room = rooms.get(ws.room);
+      if (!room || room.players.length !== 2) return;
+      room.ply = 0;
+      room.turnColor = 'white';
+      const opponent = otherPlayer(room, ws);
+      send(opponent?.ws, {...msg, ply:0, fromName: ws.playerName || 'Соперник'});
+      return;
+    }
+
+    if (msg.type === 'resign') {
       const room = rooms.get(ws.room);
       if (!room || room.players.length !== 2) return;
       const opponent = otherPlayer(room, ws);
@@ -157,5 +188,5 @@ wss.on('connection', ws => {
 });
 
 server.listen(PORT, () => {
-  console.log(`Шашки v5.1.1 Online PRO: http://localhost:${PORT}`);
+  console.log(`Шашки v5.1.2 Online PRO: http://localhost:${PORT}`);
 });

@@ -69,9 +69,34 @@ const server = http.createServer((req, res) => {
 
 const wss = new WebSocket.Server({ server });
 
+// Keep WebSocket connections alive through proxies/mobile networks.
+// Browsers automatically answer protocol-level ping frames with pong.
+const heartbeatInterval = setInterval(() => {
+  for (const ws of wss.clients) {
+    if (ws.isAlive === false) {
+      try { ws.terminate(); } catch (_) {}
+      continue;
+    }
+    ws.isAlive = false;
+    try { ws.ping(); } catch (_) {}
+  }
+}, 25000);
+heartbeatInterval.unref?.();
+wss.on('close', () => clearInterval(heartbeatInterval));
+
 wss.on('connection', ws => {
+  ws.isAlive = true;
+  ws.on('pong', () => { ws.isAlive = true; });
   ws.on('message', raw => {
     let msg; try { msg = JSON.parse(raw.toString()); } catch { return; }
+
+    // Application-level heartbeat also keeps reverse proxies from treating
+    // a waiting room as an idle connection.
+    if (msg.type === 'ping') {
+      ws.isAlive = true;
+      send(ws, {type:'pong', ts: Date.now()});
+      return;
+    }
 
     if (msg.type === 'create') {
       cleanup(ws);
@@ -188,5 +213,5 @@ wss.on('connection', ws => {
 });
 
 server.listen(PORT, () => {
-  console.log(`Шашки v5.1.2 Online PRO: http://localhost:${PORT}`);
+  console.log(`Шашки v5.1.3 Online PRO: http://localhost:${PORT}`);
 });

@@ -186,4 +186,4 @@ wss.on('connection', ws => {
   ws.on('error',()=>cleanup(ws,false));
 });
 
-server.listen(PORT,()=>console.log(`Шашки v5.1.5 Online PRO: http://localhost:${PORT}`));
+server.listen(PORT,()=>console.log(`Шашки v5.1.8 Online PRO: http://localhost:${PORT}`));

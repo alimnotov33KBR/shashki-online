@@ -457,22 +457,28 @@ html,body{
 .players-line{margin:8px 0 2px;color:#f2dfb4;font-size:13px;font-weight:750}
 .invite-note{font-size:11px;color:#8e887c;margin-top:7px;line-height:1.35}
 
-/* v5.1.6 — заставка NA STUDIO: готовый бронзово-оранжевый макет, 3 секунды. */
-#naSplash{position:fixed;inset:0;z-index:99999;background:#050505;display:flex;align-items:center;justify-content:center;overflow:hidden;transition:opacity .55s ease,visibility .55s ease}
-#naSplash img{width:100%;height:100%;object-fit:cover;object-position:center;display:block}
+/* v5.1.7 — полноэкранная заставка NA STUDIO, ровно 3 секунды. */
+#naSplash{
+  position:fixed!important;
+  top:0!important;right:0!important;bottom:0!important;left:0!important;
+  width:100vw!important;height:100vh!important;height:100dvh!important;
+  z-index:99999!important;
+  margin:0!important;padding:0!important;
+  background:#050505 url("na-studio-splash.png") center center / cover no-repeat!important;
+  overflow:hidden!important;
+  opacity:1;visibility:visible;
+  transition:opacity .55s ease,visibility .55s ease;
+}
 #naSplash.na-hide{opacity:0;visibility:hidden;pointer-events:none}
-@media(max-aspect-ratio:3/4){#naSplash img{object-fit:cover;width:auto;min-width:100%;height:100%}}
 @media(prefers-reduced-motion:reduce){#naSplash{transition:none}}
 
 </style>
 
 </head>
 <body>
-<div id="naSplash" role="presentation" aria-label="NA STUDIO">
-  <img src="na-studio-splash.png" alt="NA STUDIO представляет ШАШКИ">
-</div>
+<div id="naSplash" role="presentation" aria-label="NA STUDIO представляет ШАШКИ"></div>
 <div class="app"><div class="topbar"><div class="brand"><div class="logo"></div><div><span>Шашки</span><div style="font:600 10px/1.2 system-ui;letter-spacing:.18em;color:#9f9584;margin-top:2px">КЛАССИЧЕСКАЯ ИГРА</div></div></div><button class="iconbtn" id="menuBtn">☰</button></div><div class="card"><div class="statusline"><div id="status" class="status">Ход белых</div><div id="modeBadge" class="modebadge">2 игрока</div></div><div id="board" class="board"></div><div class="controls"><button id="restart" class="btn primary">Новая</button><button id="undo" class="btn secondary">↶ Назад</button><button id="hint" class="btn secondary">💡 Ход</button></div></div><div class="footer">Коснись шашки, затем клетки для хода</div></div>
-<div id="startMenu" class="overlay"><div class="menu"><h1>Шашки</h1><p>Классические русские шашки. Выбери режим игры.</p><button class="big primary" data-mode="bot">🤖 Против компьютера</button><button class="big secondary" data-mode="pvp">👥 На двоих</button><button class="big secondary" id="onlineModeBtn">🌐 Онлайн через интернет</button><button class="big secondary" id="showSettings">⚙️ Настройки</button><button class="big secondary" id="showRules">📖 Правила</button><div class="statgrid"><div class="stat"><b id="winsStat">0</b><span>побед</span></div><div class="stat"><b id="lossStat">0</b><span>поражений</span></div><div class="stat"><b id="gamesStat">0</b><span>партий</span></div></div><div class="tiny">Версия 5.1.6 Online PRO · NA STUDIO + Reconnect FIX</div></div></div>
+<div id="startMenu" class="overlay"><div class="menu"><h1>Шашки</h1><p>Классические русские шашки. Выбери режим игры.</p><button class="big primary" data-mode="bot">🤖 Против компьютера</button><button class="big secondary" data-mode="pvp">👥 На двоих</button><button class="big secondary" id="onlineModeBtn">🌐 Онлайн через интернет</button><button class="big secondary" id="showSettings">⚙️ Настройки</button><button class="big secondary" id="showRules">📖 Правила</button><div class="statgrid"><div class="stat"><b id="winsStat">0</b><span>побед</span></div><div class="stat"><b id="lossStat">0</b><span>поражений</span></div><div class="stat"><b id="gamesStat">0</b><span>партий</span></div></div><div class="tiny">Версия 5.1.7 Online PRO · NA STUDIO + Reconnect FIX</div></div></div>
 <div id="pauseMenu" class="overlay hidden"><div class="menu"><h1>Меню</h1><p>Текущая партия сохраняется автоматически.</p><button class="big primary" id="continueBtn">Продолжить</button><button class="big secondary" id="settingsFromPause">⚙️ Настройки</button><button class="big secondary" id="changeModeBtn">Выбрать режим</button><button class="big danger" id="newFromMenu">Начать заново</button></div></div>
 <div id="settingsMenu" class="overlay hidden"><div class="menu"><h1>Настройки</h1><div class="label">Сложность компьютера</div><div class="row" id="difficultyChoices"><button class="choice" data-diff="easy">Легко</button><button class="choice" data-diff="normal">Норма</button><button class="choice" data-diff="hard">Сложно</button><button class="choice" data-diff="pro">ПРО</button></div><div class="toggle" id="soundToggle"><span>Звук ходов</span><div id="soundSwitch" class="switch"></div></div><button class="big primary" id="closeSettings">Готово</button></div></div>
 <div id="resultMenu" class="overlay hidden"><div class="menu"><div id="resultTitle" class="resultTitle"></div><div id="resultText" class="resultText"></div><button class="big primary" id="playAgain">Играть ещё</button><button class="big secondary" id="resultModes">Выбрать режим</button></div></div>

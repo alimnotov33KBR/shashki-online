@@ -72,6 +72,17 @@ function cleanup(ws, immediate=false) {
 
 const server = http.createServer((req, res) => {
   let pathname = decodeURIComponent(req.url.split('?')[0]);
+
+  if (pathname === '/api/online-count') {
+    const count = [...wss.clients].filter(ws => ws.readyState === WebSocket.OPEN).length;
+    res.writeHead(200, {
+      'Content-Type':'application/json; charset=utf-8',
+      'Cache-Control':'no-store, no-cache, must-revalidate',
+      'Pragma':'no-cache'
+    });
+    return res.end(JSON.stringify({online:count}));
+  }
+
   if (pathname === '/') pathname = '/index.html';
   const file = path.normalize(path.join(ROOT, pathname));
   if (!file.startsWith(ROOT)) { res.writeHead(403); return res.end('Forbidden'); }
@@ -186,4 +197,4 @@ wss.on('connection', ws => {
   ws.on('error',()=>cleanup(ws,false));
 });
 
-server.listen(PORT,()=>console.log(`Шашки v5.1.9 Online PRO: http://localhost:${PORT}`));
+server.listen(PORT,()=>console.log(`Шашки v5.2.0 Online PRO: http://localhost:${PORT}`));

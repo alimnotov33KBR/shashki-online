@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#101827">
-<title>Шашки v5.1.8 Online PRO</title>
+<title>Шашки v5.1.9 Online PRO</title>
 <style>
 :root{--bg:#0d1422;--panel:#182337;--panel2:#223149;--text:#f8fafc;--muted:#aab6c8;--accent:#4ade80;--accent2:#22c55e;--light:#efd5ad;--dark:#845838;--warn:#fbbf24;--danger:#fb7185}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;min-height:100%;background:radial-gradient(circle at top,#263650 0,#0d1422 52%);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;overscroll-behavior:none}body{min-height:100vh;min-height:100dvh;display:flex;justify-content:center;align-items:center;padding:max(10px,env(safe-area-inset-top)) 12px max(10px,env(safe-area-inset-bottom));user-select:none;overflow-x:hidden}.app{width:min(96vw,610px)}
@@ -457,70 +457,140 @@ html,body{
 .players-line{margin:8px 0 2px;color:#f2dfb4;font-size:13px;font-weight:750}
 .invite-note{font-size:11px;color:#8e887c;margin-top:7px;line-height:1.35}
 
-/* v5.1.8 — надежная полноэкранная заставка NA STUDIO, ровно 3 секунды.
-   Фон заполняет экран, а основная картинка всегда видна ЦЕЛИКОМ на телефоне и ПК. */
+/* v5.1.9 — адаптивная заставка NA STUDIO без растягивания изображения.
+   Все элементы собраны нативно HTML/CSS, поэтому на мобильном ничего не обрезается. */
 #naSplash{
   position:fixed!important;
   inset:0!important;
-  width:100%!important;
-  height:100%!important;
-  min-width:100vw!important;
-  min-height:100vh!important;
-  min-height:100dvh!important;
+  width:100vw!important;
+  height:var(--splash-h,100dvh)!important;
   z-index:99999!important;
   margin:0!important;
-  padding:0!important;
+  padding:max(18px,env(safe-area-inset-top)) 18px max(18px,env(safe-area-inset-bottom))!important;
   overflow:hidden!important;
-  background:#050505!important;
-  display:grid!important;
-  place-items:center!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  background:
+    radial-gradient(circle at 50% 32%,rgba(210,116,30,.22),transparent 30%),
+    linear-gradient(90deg,transparent 0 8%,rgba(188,99,24,.16) 8.2% 8.7%,transparent 8.9% 24%,rgba(188,99,24,.12) 24.2% 24.7%,transparent 24.9% 75%,rgba(188,99,24,.12) 75.2% 75.7%,transparent 75.9% 91%,rgba(188,99,24,.16) 91.2% 91.7%,transparent 91.9%),
+    linear-gradient(145deg,#050505,#0a0705 55%,#020202)!important;
   opacity:1;
   visibility:visible;
   transition:opacity .55s ease,visibility .55s ease;
   isolation:isolate;
+  touch-action:manipulation;
 }
 #naSplash::before{
   content:"";
-  position:absolute;
-  inset:-4%;
-  z-index:-2;
-  background:#050505 url("na-studio-splash.png") center center / cover no-repeat;
-  filter:blur(18px) brightness(.42) saturate(.9);
-  transform:scale(1.08);
+  position:absolute;inset:-15%;z-index:-2;
+  background:
+    repeating-linear-gradient(125deg,transparent 0 8%,rgba(197,105,28,.12) 8.2% 8.7%,transparent 8.9% 18%);
+  transform:skewX(-8deg);
 }
 #naSplash::after{
   content:"";
-  position:absolute;
-  inset:0;
-  z-index:-1;
-  background:radial-gradient(circle at center,transparent 35%,rgba(0,0,0,.42) 100%);
-  pointer-events:none;
+  position:absolute;left:-10%;right:-10%;bottom:-4%;height:18%;z-index:-1;
+  background:
+    linear-gradient(rgba(3,3,3,.12),rgba(0,0,0,.72)),
+    conic-gradient(from 45deg,#120b07 25%,#754319 0 50%,#120b07 0 75%,#754319 0) 0 0/54px 54px;
+  transform:perspective(500px) rotateX(62deg);
+  transform-origin:bottom center;
+  opacity:.8;
 }
-#naSplashImg{
-  display:block!important;
-  width:100%!important;
-  height:100%!important;
-  max-width:100vw!important;
-  max-height:100vh!important;
-  max-height:100dvh!important;
-  object-fit:contain!important;
-  object-position:center center!important;
-  margin:0!important;
-  padding:0!important;
-  border:0!important;
-  user-select:none;
-  -webkit-user-drag:none;
+.na-splash-content{
+  width:min(92vw,760px);
+  max-height:calc(var(--splash-h,100dvh) - 36px);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  transform:translateY(-1.5vh);
+}
+.na-medallion{
+  width:clamp(82px,18vw,150px);
+  aspect-ratio:1;
+  border-radius:50%;
+  display:grid;place-items:center;
+  background:linear-gradient(135deg,#ffd36a 0%,#db7b19 42%,#8f4510 72%,#f0a33b 100%);
+  border:3px solid #f6b64c;
+  box-shadow:0 0 0 5px #5f2d0d,0 0 34px rgba(221,113,20,.45),inset 0 0 18px #fff6;
+  color:#120b07;
+  font:900 clamp(38px,9vw,72px)/1 Georgia,serif;
+  margin-bottom:clamp(10px,2vh,20px);
+}
+.na-main{
+  margin:0;
+  font:900 clamp(78px,21vw,170px)/.78 Georgia,"Times New Roman",serif;
+  letter-spacing:-.04em;
+  background:linear-gradient(180deg,#ffd06a 0%,#ee9a36 38%,#a64f13 78%,#f1a046 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 2px 0 #6f310b) drop-shadow(0 0 14px rgba(228,120,28,.24));
+}
+.na-studio{
+  margin-top:clamp(8px,1.3vh,15px);
+  font:900 clamp(34px,9vw,74px)/1 system-ui,-apple-system,"Segoe UI",sans-serif;
+  letter-spacing:.12em;
+  padding-left:.12em;
+  background:linear-gradient(180deg,#f6b24f,#b95d18 80%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 10px rgba(228,120,28,.2));
+}
+.na-presents{
+  display:flex;align-items:center;gap:14px;
+  margin:clamp(18px,3vh,28px) 0 clamp(18px,3vh,28px);
+  color:#efbd75;
+  font:600 clamp(11px,2.6vw,18px)/1 system-ui,sans-serif;
+  letter-spacing:.42em;padding-left:.42em;
+  white-space:nowrap;
+}
+.na-presents::before,.na-presents::after{content:"";width:clamp(52px,14vw,110px);height:1px;background:#d9903b}
+.na-title{
+  margin:0;
+  font:900 clamp(48px,13vw,102px)/.95 Georgia,"Times New Roman",serif;
+  letter-spacing:.08em;
+  padding-left:.08em;
+  background:linear-gradient(180deg,#ffd889 0%,#ef9c3d 56%,#a34a10 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  text-shadow:0 10px 30px rgba(150,69,10,.08);
+}
+.na-subtitle{
+  margin-top:clamp(10px,1.8vh,16px);
+  color:#efc28a;
+  font:500 clamp(10px,2.4vw,17px)/1.2 system-ui,sans-serif;
+  letter-spacing:.32em;padding-left:.32em;
+  white-space:nowrap;
 }
 #naSplash.na-hide{opacity:0;visibility:hidden;pointer-events:none}
+@media(max-width:430px){
+  .na-splash-content{width:96vw}
+  .na-presents{gap:9px;letter-spacing:.30em;padding-left:.30em}
+  .na-subtitle{letter-spacing:.22em;padding-left:.22em}
+}
+@media(max-height:650px){
+  .na-medallion{width:70px;margin-bottom:8px}
+  .na-main{font-size:68px}.na-studio{font-size:31px;margin-top:6px}
+  .na-presents{margin:13px 0;font-size:10px}.na-title{font-size:43px}.na-subtitle{margin-top:8px;font-size:9px}
+}
 @media(prefers-reduced-motion:reduce){#naSplash{transition:none}}
 
 </style>
 
 </head>
 <body>
-<div id="naSplash" role="presentation" aria-label="NA STUDIO представляет ШАШКИ"><img id="naSplashImg" src="na-studio-splash.png" alt="" draggable="false"></div>
+<div id="naSplash" role="presentation" aria-label="NA STUDIO представляет ШАШКИ">
+  <div class="na-splash-content">
+    <div class="na-medallion">♛</div>
+    <div class="na-main">NA</div>
+    <div class="na-studio">STUDIO</div>
+    <div class="na-presents">PRESENTS</div>
+    <div class="na-title">ШАШКИ</div>
+    <div class="na-subtitle">КЛАССИЧЕСКАЯ ИГРА</div>
+  </div>
+</div>
 <div class="app"><div class="topbar"><div class="brand"><div class="logo"></div><div><span>Шашки</span><div style="font:600 10px/1.2 system-ui;letter-spacing:.18em;color:#9f9584;margin-top:2px">КЛАССИЧЕСКАЯ ИГРА</div></div></div><button class="iconbtn" id="menuBtn">☰</button></div><div class="card"><div class="statusline"><div id="status" class="status">Ход белых</div><div id="modeBadge" class="modebadge">2 игрока</div></div><div id="board" class="board"></div><div class="controls"><button id="restart" class="btn primary">Новая</button><button id="undo" class="btn secondary">↶ Назад</button><button id="hint" class="btn secondary">💡 Ход</button></div></div><div class="footer">Коснись шашки, затем клетки для хода</div></div>
-<div id="startMenu" class="overlay"><div class="menu"><h1>Шашки</h1><p>Классические русские шашки. Выбери режим игры.</p><button class="big primary" data-mode="bot">🤖 Против компьютера</button><button class="big secondary" data-mode="pvp">👥 На двоих</button><button class="big secondary" id="onlineModeBtn">🌐 Онлайн через интернет</button><button class="big secondary" id="showSettings">⚙️ Настройки</button><button class="big secondary" id="showRules">📖 Правила</button><div class="statgrid"><div class="stat"><b id="winsStat">0</b><span>побед</span></div><div class="stat"><b id="lossStat">0</b><span>поражений</span></div><div class="stat"><b id="gamesStat">0</b><span>партий</span></div></div><div class="tiny">Версия 5.1.8 Online PRO · NA STUDIO + Reconnect FIX</div></div></div>
+<div id="startMenu" class="overlay"><div class="menu"><h1>Шашки</h1><p>Классические русские шашки. Выбери режим игры.</p><button class="big primary" data-mode="bot">🤖 Против компьютера</button><button class="big secondary" data-mode="pvp">👥 На двоих</button><button class="big secondary" id="onlineModeBtn">🌐 Онлайн через интернет</button><button class="big secondary" id="showSettings">⚙️ Настройки</button><button class="big secondary" id="showRules">📖 Правила</button><div class="statgrid"><div class="stat"><b id="winsStat">0</b><span>побед</span></div><div class="stat"><b id="lossStat">0</b><span>поражений</span></div><div class="stat"><b id="gamesStat">0</b><span>партий</span></div></div><div class="tiny">Версия 5.1.9 Online PRO · NA STUDIO + Reconnect FIX</div></div></div>
 <div id="pauseMenu" class="overlay hidden"><div class="menu"><h1>Меню</h1><p>Текущая партия сохраняется автоматически.</p><button class="big primary" id="continueBtn">Продолжить</button><button class="big secondary" id="settingsFromPause">⚙️ Настройки</button><button class="big secondary" id="changeModeBtn">Выбрать режим</button><button class="big danger" id="newFromMenu">Начать заново</button></div></div>
 <div id="settingsMenu" class="overlay hidden"><div class="menu"><h1>Настройки</h1><div class="label">Сложность компьютера</div><div class="row" id="difficultyChoices"><button class="choice" data-diff="easy">Легко</button><button class="choice" data-diff="normal">Норма</button><button class="choice" data-diff="hard">Сложно</button><button class="choice" data-diff="pro">ПРО</button></div><div class="toggle" id="soundToggle"><span>Звук ходов</span><div id="soundSwitch" class="switch"></div></div><button class="big primary" id="closeSettings">Готово</button></div></div>
 <div id="resultMenu" class="overlay hidden"><div class="menu"><div id="resultTitle" class="resultTitle"></div><div id="resultText" class="resultText"></div><button class="big primary" id="playAgain">Играть ещё</button><button class="big secondary" id="resultModes">Выбрать режим</button></div></div>
@@ -1103,12 +1173,23 @@ $('shareRoomBtn').onclick=async()=>{
 };
 document.querySelectorAll('[data-diff]').forEach(b=>b.onclick=()=>{settings.difficulty=b.dataset.diff;refreshSettings()});$('soundToggle').onclick=()=>{settings.sound=!settings.sound;refreshSettings();playTone(440,.05)};$('showRules').onclick=rules;$('showSettings').onclick=openSettings;$('settingsFromPause').onclick=openSettings;$('closeSettings').onclick=closeSettings;$('restart').onclick=()=>{if(gameMode==='online'){onlinePly=0;sendOnline({type:'restart',room:onlineRoom});initialBoard()}else initialBoard()};$('undo').onclick=undo;$('hint').onclick=hint;$('menuBtn').onclick=()=>pauseMenu.classList.remove('hidden');$('continueBtn').onclick=()=>pauseMenu.classList.add('hidden');$('changeModeBtn').onclick=()=>{if(gameMode==='online')leaveOnline();pauseMenu.classList.add('hidden');startMenu.classList.remove('hidden')};$('newFromMenu').onclick=()=>{pauseMenu.classList.add('hidden');initialBoard()};$('playAgain').onclick=()=>{if(gameMode==='online'){if(!onlineConnected)return;if(rematchState==='offered'){sendOnline({type:'rematch_accept',room:onlineRoom});setRematchButtons('waiting');$('resultText').textContent='Реванш принят. Запускаем новую партию…'}else if(rematchState==='idle'){sendOnline({type:'rematch_request',room:onlineRoom});setRematchButtons('waiting');$('resultText').textContent='Предложение реванша отправлено…'}return}resultMenu.classList.add('hidden');initialBoard()};$('resultModes').onclick=()=>{if(gameMode==='online'&&rematchState==='offered'){sendOnline({type:'rematch_decline',room:onlineRoom});setRematchButtons('idle');$('resultText').textContent='Ты отказался от реванша.';return}if(gameMode==='online'&&rematchState==='waiting'){sendOnline({type:'rematch_cancel',room:onlineRoom});setRematchButtons('idle');$('resultText').textContent='Предложение реванша отменено.';return}if(gameMode==='online')leaveOnline();resultMenu.classList.add('hidden');startMenu.classList.remove('hidden')};
 
-// Фирменная заставка NA STUDIO: показывается при каждом новом открытии страницы.
+// Фирменная заставка NA STUDIO: адаптивная, 3 секунды.
 (()=>{
   const splash=document.getElementById('naSplash');
   if(!splash)return;
+  const syncHeight=()=>splash.style.setProperty('--splash-h',Math.max(1,window.innerHeight)+'px');
+  syncHeight();
+  window.addEventListener('resize',syncHeight,{passive:true});
+  window.addEventListener('orientationchange',syncHeight,{passive:true});
   let closed=false;
-  const close=()=>{if(closed)return;closed=true;splash.classList.add('na-hide');setTimeout(()=>splash.remove(),750)};
+  const close=()=>{
+    if(closed)return;
+    closed=true;
+    window.removeEventListener('resize',syncHeight);
+    window.removeEventListener('orientationchange',syncHeight);
+    splash.classList.add('na-hide');
+    setTimeout(()=>splash.remove(),750);
+  };
   splash.addEventListener('click',close,{once:true});
   splash.addEventListener('touchstart',close,{once:true,passive:true});
   setTimeout(close,3000);

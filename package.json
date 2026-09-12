@@ -1,6 +1,6 @@
 {
   "name": "shashki-online-v5-1",
-  "version": "5.1.8",
+  "version": "5.1.9",
   "private": true,
   "description": "Шашки Crown Edition v5.1.7 Online PRO: NA STUDIO · Reconnect FIX: принудительное восстановление WebSocket после смены сети, автопереподключение и реванш",
   "main": "server.js",

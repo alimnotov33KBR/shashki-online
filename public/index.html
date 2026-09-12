@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#101827">
-<title>Шашки v5.1.4 Online PRO</title>
+<title>Шашки v5.1.5 Online PRO</title>
 <style>
 :root{--bg:#0d1422;--panel:#182337;--panel2:#223149;--text:#f8fafc;--muted:#aab6c8;--accent:#4ade80;--accent2:#22c55e;--light:#efd5ad;--dark:#845838;--warn:#fbbf24;--danger:#fb7185}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;min-height:100%;background:radial-gradient(circle at top,#263650 0,#0d1422 52%);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;overscroll-behavior:none}body{min-height:100vh;min-height:100dvh;display:flex;justify-content:center;align-items:center;padding:max(10px,env(safe-area-inset-top)) 12px max(10px,env(safe-area-inset-bottom));user-select:none;overflow-x:hidden}.app{width:min(96vw,610px)}
@@ -456,12 +456,43 @@ html,body{
 .online-actions .big{margin:0;font-size:13px;padding:12px 8px}
 .players-line{margin:8px 0 2px;color:#f2dfb4;font-size:13px;font-weight:750}
 .invite-note{font-size:11px;color:#8e887c;margin-top:7px;line-height:1.35}
+
+/* v5.1.5 — фирменная заставка NA STUDIO. Игровая механика v5.1.4 не изменена. */
+#naSplash{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;overflow:hidden;background:#05080c;color:#f7d987;transition:opacity .65s ease,visibility .65s ease}
+#naSplash::before{content:"";position:absolute;inset:-20%;background:radial-gradient(circle at 50% 42%,rgba(216,168,77,.22),transparent 27%),repeating-linear-gradient(118deg,transparent 0 150px,rgba(216,168,77,.055) 151px 154px,transparent 155px 290px);transform:scale(1.08);animation:naGlow 2.5s ease-in-out infinite alternate}
+#naSplash::after{content:"";position:absolute;left:-10%;right:-10%;bottom:-8vh;height:43vh;background:linear-gradient(180deg,transparent,#05080c 82%),repeating-conic-gradient(from 45deg,rgba(220,174,84,.13) 0 25%,rgba(10,14,19,.35) 0 50%) 50%/90px 90px;transform:perspective(520px) rotateX(62deg);transform-origin:bottom;opacity:.6}
+.na-splash-inner{position:relative;z-index:2;text-align:center;padding:28px;animation:naIntro .9s cubic-bezier(.2,.8,.2,1) both}
+.na-mark{width:92px;height:92px;margin:0 auto 24px;border-radius:50%;display:grid;place-items:center;font:700 44px/1 Georgia,serif;color:#171009;background:radial-gradient(circle at 35% 28%,#fff3b2 0 8%,#e8b84f 35%,#9a5f0b 72%,#f2cd69 100%);border:2px solid #f5d67d;box-shadow:0 0 0 7px rgba(216,168,77,.09),0 18px 50px #000,0 0 32px rgba(232,184,79,.24)}
+.na-title{font:900 clamp(52px,11vw,112px)/.86 Georgia,serif;letter-spacing:.055em;color:#f7d987;text-shadow:0 3px 0 #7a4c10,0 10px 35px #000,0 0 20px rgba(240,198,94,.18)}
+.na-title span{display:block;font:800 clamp(24px,5vw,46px)/1.15 system-ui,sans-serif;letter-spacing:.32em;margin:15px 0 0 .32em;color:#d8a84d;text-shadow:0 3px 18px #000}
+.na-rule{width:min(380px,70vw);height:1px;margin:25px auto 18px;background:linear-gradient(90deg,transparent,#d8a84d,transparent)}
+.na-presents{font:600 clamp(11px,2.5vw,15px)/1 system-ui,sans-serif;letter-spacing:.42em;margin-left:.42em;color:#b8aa91}
+.na-game{margin-top:48px;font:700 clamp(25px,6vw,44px)/1 Georgia,serif;letter-spacing:.12em;color:#f5ddb0;text-shadow:0 3px 18px #000}
+.na-sub{margin-top:10px;font:600 10px/1 system-ui,sans-serif;letter-spacing:.28em;color:#8f877a}
+.na-skip{position:absolute;z-index:3;bottom:max(22px,env(safe-area-inset-bottom));left:0;right:0;text-align:center;font:500 11px/1.2 system-ui,sans-serif;color:#6f6b63;letter-spacing:.08em}
+#naSplash.na-hide{opacity:0;visibility:hidden;pointer-events:none}
+@keyframes naIntro{from{opacity:0;transform:scale(.94) translateY(14px)}to{opacity:1;transform:none}}
+@keyframes naGlow{from{opacity:.72}to{opacity:1}}
+@media(max-height:620px){.na-mark{width:64px;height:64px;font-size:31px;margin-bottom:15px}.na-game{margin-top:28px}.na-rule{margin:18px auto 14px}}
+@media(prefers-reduced-motion:reduce){#naSplash,.na-splash-inner,#naSplash::before{animation:none;transition:none}}
+
 </style>
 
 </head>
 <body>
+<div id="naSplash" role="presentation" aria-label="NA STUDIO">
+  <div class="na-splash-inner">
+    <div class="na-mark">♛</div>
+    <div class="na-title">NA<span>STUDIO</span></div>
+    <div class="na-rule"></div>
+    <div class="na-presents">PRESENTS</div>
+    <div class="na-game">ШАШКИ</div>
+    <div class="na-sub">КЛАССИЧЕСКАЯ ИГРА</div>
+  </div>
+  <div class="na-skip">коснись, чтобы продолжить</div>
+</div>
 <div class="app"><div class="topbar"><div class="brand"><div class="logo"></div><div><span>Шашки</span><div style="font:600 10px/1.2 system-ui;letter-spacing:.18em;color:#9f9584;margin-top:2px">КЛАССИЧЕСКАЯ ИГРА</div></div></div><button class="iconbtn" id="menuBtn">☰</button></div><div class="card"><div class="statusline"><div id="status" class="status">Ход белых</div><div id="modeBadge" class="modebadge">2 игрока</div></div><div id="board" class="board"></div><div class="controls"><button id="restart" class="btn primary">Новая</button><button id="undo" class="btn secondary">↶ Назад</button><button id="hint" class="btn secondary">💡 Ход</button></div></div><div class="footer">Коснись шашки, затем клетки для хода</div></div>
-<div id="startMenu" class="overlay"><div class="menu"><h1>Шашки</h1><p>Классические русские шашки. Выбери режим игры.</p><button class="big primary" data-mode="bot">🤖 Против компьютера</button><button class="big secondary" data-mode="pvp">👥 На двоих</button><button class="big secondary" id="onlineModeBtn">🌐 Онлайн через интернет</button><button class="big secondary" id="showSettings">⚙️ Настройки</button><button class="big secondary" id="showRules">📖 Правила</button><div class="statgrid"><div class="stat"><b id="winsStat">0</b><span>побед</span></div><div class="stat"><b id="lossStat">0</b><span>поражений</span></div><div class="stat"><b id="gamesStat">0</b><span>партий</span></div></div><div class="tiny">Версия 5.1.4 Online PRO · Reconnect FIX + реванш</div></div></div>
+<div id="startMenu" class="overlay"><div class="menu"><h1>Шашки</h1><p>Классические русские шашки. Выбери режим игры.</p><button class="big primary" data-mode="bot">🤖 Против компьютера</button><button class="big secondary" data-mode="pvp">👥 На двоих</button><button class="big secondary" id="onlineModeBtn">🌐 Онлайн через интернет</button><button class="big secondary" id="showSettings">⚙️ Настройки</button><button class="big secondary" id="showRules">📖 Правила</button><div class="statgrid"><div class="stat"><b id="winsStat">0</b><span>побед</span></div><div class="stat"><b id="lossStat">0</b><span>поражений</span></div><div class="stat"><b id="gamesStat">0</b><span>партий</span></div></div><div class="tiny">Версия 5.1.5 Online PRO · NA STUDIO + Reconnect FIX</div></div></div>
 <div id="pauseMenu" class="overlay hidden"><div class="menu"><h1>Меню</h1><p>Текущая партия сохраняется автоматически.</p><button class="big primary" id="continueBtn">Продолжить</button><button class="big secondary" id="settingsFromPause">⚙️ Настройки</button><button class="big secondary" id="changeModeBtn">Выбрать режим</button><button class="big danger" id="newFromMenu">Начать заново</button></div></div>
 <div id="settingsMenu" class="overlay hidden"><div class="menu"><h1>Настройки</h1><div class="label">Сложность компьютера</div><div class="row" id="difficultyChoices"><button class="choice" data-diff="easy">Легко</button><button class="choice" data-diff="normal">Норма</button><button class="choice" data-diff="hard">Сложно</button><button class="choice" data-diff="pro">ПРО</button></div><div class="toggle" id="soundToggle"><span>Звук ходов</span><div id="soundSwitch" class="switch"></div></div><button class="big primary" id="closeSettings">Готово</button></div></div>
 <div id="resultMenu" class="overlay hidden"><div class="menu"><div id="resultTitle" class="resultTitle"></div><div id="resultText" class="resultText"></div><button class="big primary" id="playAgain">Играть ещё</button><button class="big secondary" id="resultModes">Выбрать режим</button></div></div>
@@ -1043,6 +1074,18 @@ $('shareRoomBtn').onclick=async()=>{
   }catch(e){if(e&&e.name!=='AbortError')$('roomStatus').textContent='Ссылка: '+url}
 };
 document.querySelectorAll('[data-diff]').forEach(b=>b.onclick=()=>{settings.difficulty=b.dataset.diff;refreshSettings()});$('soundToggle').onclick=()=>{settings.sound=!settings.sound;refreshSettings();playTone(440,.05)};$('showRules').onclick=rules;$('showSettings').onclick=openSettings;$('settingsFromPause').onclick=openSettings;$('closeSettings').onclick=closeSettings;$('restart').onclick=()=>{if(gameMode==='online'){onlinePly=0;sendOnline({type:'restart',room:onlineRoom});initialBoard()}else initialBoard()};$('undo').onclick=undo;$('hint').onclick=hint;$('menuBtn').onclick=()=>pauseMenu.classList.remove('hidden');$('continueBtn').onclick=()=>pauseMenu.classList.add('hidden');$('changeModeBtn').onclick=()=>{if(gameMode==='online')leaveOnline();pauseMenu.classList.add('hidden');startMenu.classList.remove('hidden')};$('newFromMenu').onclick=()=>{pauseMenu.classList.add('hidden');initialBoard()};$('playAgain').onclick=()=>{if(gameMode==='online'){if(!onlineConnected)return;if(rematchState==='offered'){sendOnline({type:'rematch_accept',room:onlineRoom});setRematchButtons('waiting');$('resultText').textContent='Реванш принят. Запускаем новую партию…'}else if(rematchState==='idle'){sendOnline({type:'rematch_request',room:onlineRoom});setRematchButtons('waiting');$('resultText').textContent='Предложение реванша отправлено…'}return}resultMenu.classList.add('hidden');initialBoard()};$('resultModes').onclick=()=>{if(gameMode==='online'&&rematchState==='offered'){sendOnline({type:'rematch_decline',room:onlineRoom});setRematchButtons('idle');$('resultText').textContent='Ты отказался от реванша.';return}if(gameMode==='online'&&rematchState==='waiting'){sendOnline({type:'rematch_cancel',room:onlineRoom});setRematchButtons('idle');$('resultText').textContent='Предложение реванша отменено.';return}if(gameMode==='online')leaveOnline();resultMenu.classList.add('hidden');startMenu.classList.remove('hidden')};
+
+// Фирменная заставка NA STUDIO: показывается при каждом новом открытии страницы.
+(()=>{
+  const splash=document.getElementById('naSplash');
+  if(!splash)return;
+  let closed=false;
+  const close=()=>{if(closed)return;closed=true;splash.classList.add('na-hide');setTimeout(()=>splash.remove(),750)};
+  splash.addEventListener('click',close,{once:true});
+  splash.addEventListener('touchstart',close,{once:true,passive:true});
+  setTimeout(close,2800);
+})();
+
 loadPrefs();refreshSettings();updateStats();
 $('playerNameInput').value=storage.get('shashki_player_name')||'';
 const invitedRoom=(()=>{try{return new URL(location.href).searchParams.get('room')||''}catch(e){return ''}})().toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5);

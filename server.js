@@ -7,7 +7,7 @@ const WebSocket = require('ws');
 const PORT = process.env.PORT || 3000;
 const ROOT = path.join(__dirname, 'public');
 const rooms = new Map();
-const RECONNECT_GRACE_MS = 20000;
+const RECONNECT_GRACE_MS = 60000;
 
 function roomCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -186,4 +186,4 @@ wss.on('connection', ws => {
   ws.on('error',()=>cleanup(ws,false));
 });
 
-server.listen(PORT,()=>console.log(`Шашки v5.1.3 Online PRO: http://localhost:${PORT}`));
+server.listen(PORT,()=>console.log(`Шашки v5.1.4 Online PRO: http://localhost:${PORT}`));

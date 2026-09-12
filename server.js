@@ -9,19 +9,126 @@ const ROOT = path.join(__dirname, 'public');
 const rooms = new Map();
 const RECONNECT_GRACE_MS = 60000;
 const ADMIN_KEY = String(process.env.ADMIN_KEY || '');
+const DATABASE_URL = String(process.env.DATABASE_URL || '').trim();
 const RATINGS_FILE = path.join(__dirname, 'ratings.json');
 const ratingRateLimit = new Map();
 
-function loadRatings() {
+let dbPool = null;
+let ratings = [];
+let storageBackend = DATABASE_URL ? 'postgresql' : 'file';
+
+if (DATABASE_URL) {
+  const { Pool } = require('pg');
+  const dbConfig = {
+    connectionString: DATABASE_URL,
+    max: 5,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 10000
+  };
+  if (/sslmode=(require|verify-ca|verify-full)/i.test(DATABASE_URL) || process.env.PGSSL === 'require') {
+    dbConfig.ssl = { rejectUnauthorized: false };
+  }
+  dbPool = new Pool(dbConfig);
+  dbPool.on('error', err => console.error('PostgreSQL pool error:', err.message));
+}
+
+function loadRatingsFile() {
   try {
     const raw = JSON.parse(fs.readFileSync(RATINGS_FILE, 'utf8'));
     return Array.isArray(raw) ? raw : [];
   } catch (_) { return []; }
 }
-function saveRatings(items) {
+function saveRatingsFile(items) {
   try { fs.writeFileSync(RATINGS_FILE, JSON.stringify(items, null, 2), 'utf8'); } catch (_) {}
 }
-let ratings = loadRatings();
+ratings = loadRatingsFile();
+
+async function initRatingsStorage() {
+  if (!dbPool) {
+    console.warn('Ratings storage: local file fallback (set DATABASE_URL for permanent PostgreSQL storage).');
+    return;
+  }
+  await dbPool.query(`
+    CREATE TABLE IF NOT EXISTS game_ratings (
+      id TEXT PRIMARY KEY,
+      rating SMALLINT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+      comment VARCHAR(300) NOT NULL DEFAULT '',
+      player_name VARCHAR(20) NOT NULL DEFAULT 'Игрок',
+      mode VARCHAR(10) NOT NULL DEFAULT 'unknown',
+      version VARCHAR(20) NOT NULL DEFAULT '',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+  await dbPool.query('CREATE INDEX IF NOT EXISTS game_ratings_created_at_idx ON game_ratings (created_at DESC)');
+
+  // One-time best-effort migration of any ratings.json bundled from an earlier version.
+  if (ratings.length) {
+    const countResult = await dbPool.query('SELECT COUNT(*)::int AS count FROM game_ratings');
+    if ((countResult.rows[0]?.count || 0) === 0) {
+      for (const item of ratings) {
+        const n = Number(item.rating);
+        if (!Number.isInteger(n) || n < 1 || n > 5) continue;
+        await dbPool.query(
+          `INSERT INTO game_ratings (id,rating,comment,player_name,mode,version,created_at)
+           VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT (id) DO NOTHING`,
+          [String(item.id || crypto.randomBytes(8).toString('hex')), n,
+           String(item.comment || '').slice(0,300), cleanName(item.playerName || 'Игрок'),
+           ['online','bot','pvp'].includes(item.mode) ? item.mode : 'unknown',
+           String(item.version || '').slice(0,20), item.createdAt || new Date().toISOString()]
+        );
+      }
+      console.log(`Ratings migration: imported up to ${ratings.length} local ratings into PostgreSQL.`);
+    }
+  }
+  console.log('Ratings storage: PostgreSQL (persistent).');
+}
+
+async function insertRating(item) {
+  if (dbPool) {
+    await dbPool.query(
+      `INSERT INTO game_ratings (id,rating,comment,player_name,mode,version,created_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+      [item.id,item.rating,item.comment,item.playerName,item.mode,item.version,item.createdAt]
+    );
+    return;
+  }
+  ratings.push(item);
+  if (ratings.length > 5000) ratings = ratings.slice(-5000);
+  saveRatingsFile(ratings);
+}
+
+async function getRatingsAdminData() {
+  if (dbPool) {
+    const summary = await dbPool.query(`
+      SELECT COUNT(*)::int AS count, COALESCE(AVG(rating),0)::float AS average,
+             COUNT(*) FILTER (WHERE rating=1)::int AS r1,
+             COUNT(*) FILTER (WHERE rating=2)::int AS r2,
+             COUNT(*) FILTER (WHERE rating=3)::int AS r3,
+             COUNT(*) FILTER (WHERE rating=4)::int AS r4,
+             COUNT(*) FILTER (WHERE rating=5)::int AS r5
+      FROM game_ratings
+    `);
+    const latest = await dbPool.query(`
+      SELECT id,rating,comment,player_name AS "playerName",mode,version,
+             created_at AS "createdAt"
+      FROM game_ratings ORDER BY created_at DESC LIMIT 200
+    `);
+    const r = summary.rows[0] || {};
+    return {
+      count: Number(r.count) || 0,
+      average: Number(r.average) || 0,
+      distribution: {1:Number(r.r1)||0,2:Number(r.r2)||0,3:Number(r.r3)||0,4:Number(r.r4)||0,5:Number(r.r5)||0},
+      items: latest.rows,
+      storage: 'postgresql'
+    };
+  }
+  const distribution = {1:0,2:0,3:0,4:0,5:0};
+  let sum = 0;
+  for (const item of ratings) { distribution[item.rating] = (distribution[item.rating] || 0) + 1; sum += Number(item.rating) || 0; }
+  const count = ratings.length;
+  return {count, average:count ? sum/count : 0, distribution, items:[...ratings].reverse().slice(0,200), storage:'file'};
+}
+
 function readJsonBody(req, limit = 8192) {
   return new Promise((resolve, reject) => {
     let body = '';
@@ -123,9 +230,7 @@ const server = http.createServer(async (req, res) => {
         version: String(body.version || '').slice(0, 20),
         createdAt: new Date().toISOString()
       };
-      ratings.push(item);
-      if (ratings.length > 5000) ratings = ratings.slice(-5000);
-      saveRatings(ratings);
+      await insertRating(item);
       ratingRateLimit.set(ip, now);
       return json(res, 201, {ok:true});
     } catch (e) { return json(res, 400, {error:'Не удалось принять оценку.'}); }
@@ -134,11 +239,13 @@ const server = http.createServer(async (req, res) => {
   if (pathname === '/api/admin/ratings' && req.method === 'GET') {
     if (!ADMIN_KEY) return json(res, 503, {error:'Ключ владельца ещё не настроен на сервере.'});
     if (!adminAuthorized(req)) return json(res, 401, {error:'Неверный ключ владельца.'});
-    const distribution = {1:0,2:0,3:0,4:0,5:0};
-    let sum = 0;
-    for (const item of ratings) { distribution[item.rating] = (distribution[item.rating] || 0) + 1; sum += Number(item.rating) || 0; }
-    const count = ratings.length;
-    return json(res, 200, {count, average:count ? sum/count : 0, distribution, items:[...ratings].reverse().slice(0,200)});
+    try {
+      const data = await getRatingsAdminData();
+      return json(res, 200, data);
+    } catch (e) {
+      console.error('Ratings read error:', e.message);
+      return json(res, 500, {error:'Не удалось загрузить оценки.'});
+    }
   }
 
   if (pathname === '/api/online-count') {
@@ -265,4 +372,6 @@ wss.on('connection', ws => {
   ws.on('error',()=>cleanup(ws,false));
 });
 
-server.listen(PORT,()=>console.log(`Шашки v5.2.0 Online PRO: http://localhost:${PORT}`));
+initRatingsStorage()
+  .then(() => server.listen(PORT,()=>console.log(`Шашки v5.2.2 Online PRO: http://localhost:${PORT}`)))
+  .catch(err => { console.error('Ratings storage initialization failed:', err.message); process.exit(1); });

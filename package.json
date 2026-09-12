@@ -1,13 +1,14 @@
 {
-  "name": "shashki-online-v5-2-1",
-  "version": "5.2.1",
+  "name": "shashki-online-v5-2-2",
+  "version": "5.2.2",
   "private": true,
-  "description": "Шашки v5.2.1 Online PRO — NA STUDIO, Reconnect FIX, счётчик онлайн и оценки игроков",
+  "description": "Шашки v5.2.2 Online PRO — постоянное хранение оценок в PostgreSQL",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "ws": "^8.18.0"
+    "ws": "^8.18.0",
+    "pg": "^8.13.1"
   }
 }

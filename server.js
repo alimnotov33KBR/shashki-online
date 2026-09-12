@@ -373,5 +373,5 @@ wss.on('connection', ws => {
 });
 
 initRatingsStorage()
-  .then(() => server.listen(PORT,()=>console.log(`Шашки v5.2.2 Online PRO: http://localhost:${PORT}`)))
+  .then(() => server.listen(PORT,()=>console.log(`Шашки v5.2.3 Online PRO: http://localhost:${PORT}`)))
   .catch(err => { console.error('Ratings storage initialization failed:', err.message); process.exit(1); });

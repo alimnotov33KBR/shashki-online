@@ -1,8 +1,8 @@
 {
-  "name": "shashki-online-v5-1",
-  "version": "5.2.0",
+  "name": "shashki-online-v5-2-1",
+  "version": "5.2.1",
   "private": true,
-  "description": "Шашки v5.2.0 Online PRO — NA STUDIO, Reconnect FIX и счётчик онлайн",
+  "description": "Шашки v5.2.1 Online PRO — NA STUDIO, Reconnect FIX, счётчик онлайн и оценки игроков",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

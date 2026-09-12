@@ -8,6 +8,38 @@ const PORT = process.env.PORT || 3000;
 const ROOT = path.join(__dirname, 'public');
 const rooms = new Map();
 const RECONNECT_GRACE_MS = 60000;
+const ADMIN_KEY = String(process.env.ADMIN_KEY || '');
+const RATINGS_FILE = path.join(__dirname, 'ratings.json');
+const ratingRateLimit = new Map();
+
+function loadRatings() {
+  try {
+    const raw = JSON.parse(fs.readFileSync(RATINGS_FILE, 'utf8'));
+    return Array.isArray(raw) ? raw : [];
+  } catch (_) { return []; }
+}
+function saveRatings(items) {
+  try { fs.writeFileSync(RATINGS_FILE, JSON.stringify(items, null, 2), 'utf8'); } catch (_) {}
+}
+let ratings = loadRatings();
+function readJsonBody(req, limit = 8192) {
+  return new Promise((resolve, reject) => {
+    let body = '';
+    req.on('data', chunk => { body += chunk; if (body.length > limit) { reject(new Error('too_large')); req.destroy(); } });
+    req.on('end', () => { try { resolve(body ? JSON.parse(body) : {}); } catch (_) { reject(new Error('bad_json')); } });
+    req.on('error', reject);
+  });
+}
+function json(res, status, data) {
+  res.writeHead(status, {'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store, no-cache, must-revalidate','Pragma':'no-cache'});
+  res.end(JSON.stringify(data));
+}
+function adminAuthorized(req) {
+  if (!ADMIN_KEY) return false;
+  const provided = String(req.headers['x-admin-key'] || '');
+  if (!provided || provided.length !== ADMIN_KEY.length) return false;
+  try { return crypto.timingSafeEqual(Buffer.from(provided), Buffer.from(ADMIN_KEY)); } catch (_) { return false; }
+}
 
 function roomCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -70,8 +102,44 @@ function cleanup(ws, immediate=false) {
   player.disconnectTimer.unref?.();
 }
 
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
   let pathname = decodeURIComponent(req.url.split('?')[0]);
+
+  if (pathname === '/api/ratings' && req.method === 'POST') {
+    try {
+      const now = Date.now();
+      const ip = String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+      const last = ratingRateLimit.get(ip) || 0;
+      if (now - last < 15000) return json(res, 429, {error:'Подождите немного перед следующей оценкой.'});
+      const body = await readJsonBody(req);
+      const rating = Number(body.rating);
+      if (!Number.isInteger(rating) || rating < 1 || rating > 5) return json(res, 400, {error:'Оценка должна быть от 1 до 5.'});
+      const item = {
+        id: crypto.randomBytes(8).toString('hex'),
+        rating,
+        comment: String(body.comment || '').trim().slice(0, 300),
+        playerName: cleanName(body.playerName || 'Игрок'),
+        mode: ['online','bot','pvp'].includes(body.mode) ? body.mode : 'unknown',
+        version: String(body.version || '').slice(0, 20),
+        createdAt: new Date().toISOString()
+      };
+      ratings.push(item);
+      if (ratings.length > 5000) ratings = ratings.slice(-5000);
+      saveRatings(ratings);
+      ratingRateLimit.set(ip, now);
+      return json(res, 201, {ok:true});
+    } catch (e) { return json(res, 400, {error:'Не удалось принять оценку.'}); }
+  }
+
+  if (pathname === '/api/admin/ratings' && req.method === 'GET') {
+    if (!ADMIN_KEY) return json(res, 503, {error:'Ключ владельца ещё не настроен на сервере.'});
+    if (!adminAuthorized(req)) return json(res, 401, {error:'Неверный ключ владельца.'});
+    const distribution = {1:0,2:0,3:0,4:0,5:0};
+    let sum = 0;
+    for (const item of ratings) { distribution[item.rating] = (distribution[item.rating] || 0) + 1; sum += Number(item.rating) || 0; }
+    const count = ratings.length;
+    return json(res, 200, {count, average:count ? sum/count : 0, distribution, items:[...ratings].reverse().slice(0,200)});
+  }
 
   if (pathname === '/api/online-count') {
     const count = [...wss.clients].filter(ws => ws.readyState === WebSocket.OPEN).length;
